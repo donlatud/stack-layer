@@ -6,16 +6,16 @@
   --font-family-sans: "Poppins", sans-serif;
 
   /* Typography Scale */
-  --font-size-headline-1: 2.5rem; /* 40px */
-  --font-size-headline-2: 2rem; /* 32px */
-  --font-size-headline-3: 1.5rem; /* 24px */
+  --font-size-headline-1: 3.25rem; /* 52px */
+  --font-size-headline-2: 2.5rem; /* 40px */
+  --font-size-headline-3: 2rem; /* 32px */
   --font-size-headline-4: 1.25rem; /* 20px */
   --font-size-body-1: 1rem; /* 16px */
   --font-size-body-2: 0.875rem; /* 14px */
   --font-size-body-3: 0.75rem; /* 12px */
 
   --font-weight-headline: 600; /* semibold */
-  --font-weight-body: 400; /* regular */
+  --font-weight-body: 500; /* regular */
 
   /* Base / Neutral Colors */
   --color-brown-600: #26231e;
@@ -32,6 +32,9 @@
   --color-brand-red: #eb5164;
 
   --color-white: #ffffff;
+
+  /* Breakpoints - Override lg to 1440px */
+  --breakpoint-lg: 1440px;
 }
 
 /* Typography Utility Classes */
@@ -39,42 +42,42 @@
   .text-headline-1 {
     font-size: var(--font-size-headline-1);
     font-weight: var(--font-weight-headline);
-    line-height: 1.2;
+    line-height: 60px;
   }
 
   .text-headline-2 {
     font-size: var(--font-size-headline-2);
     font-weight: var(--font-weight-headline);
-    line-height: 1.2;
+    line-height: 48px;
   }
 
   .text-headline-3 {
     font-size: var(--font-size-headline-3);
     font-weight: var(--font-weight-headline);
-    line-height: 1.3;
+    line-height: 32px;
   }
 
   .text-headline-4 {
     font-size: var(--font-size-headline-4);
     font-weight: var(--font-weight-headline);
-    line-height: 1.3;
+    line-height: 28px;
   }
 
   .text-body-1 {
     font-size: var(--font-size-body-1);
     font-weight: var(--font-weight-body);
-    line-height: 1.5;
+    line-height: 24px;
   }
 
   .text-body-2 {
     font-size: var(--font-size-body-2);
     font-weight: var(--font-weight-body);
-    line-height: 1.5;
+    line-height: 22px;
   }
 
   .text-body-3 {
     font-size: var(--font-size-body-3);
     font-weight: var(--font-weight-body);
-    line-height: 1.5;
+    line-height: 20px;
   }
 }
