@@ -1,5 +1,7 @@
 import hhLogo from "../assets/hh-logo.svg";
 import hamburgerMenu from "../assets/hamburger-bar.svg";
+import WhiteButton from "./common/WhiteButton";
+import BlackButton from "./common/BlackButton";
 
 const NavBar = () => {
   return (
@@ -15,12 +17,8 @@ const NavBar = () => {
         alt="hamburger bar"
       />
       <div className="hidden lg:flex lg:gap-[8px] lg:w-[276px] lg:h-[48px]">
-        <button className="w-[127px] h-[48px] rounded-[999px] border border-brown-400 bg-white text-brown-600 text-body-1 font-medium pt-[12px] pr-[40px] pb-[12px] pl-[40px]">
-          Log in
-        </button>
-        <button className="w-[141px] h-[48px] rounded-[999px] bg-brown-600 text-white text-body-1 font-medium pt-[12px] pr-[40px] pb-[12px] pl-[40px]">
-          Sign up
-        </button>
+        <WhiteButton children="Log in" />
+        <BlackButton children="Sign up" />
       </div>
     </div>
   );
