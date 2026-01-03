@@ -18,32 +18,32 @@ const BlogCard = ({
   date,
 }: BlogCardProps) => {
   return (
-    <div className="flex flex-col gap-[16px] w-full">
-      <a href="#" className="relative h-[212px] lg:h-[360px]">
+    <article className="flex flex-col gap-[16px] w-full cursor-pointer transition-all duration-300 hover:scale-[1.02] hover:shadow-lg hover:shadow-brown-300/20 active:scale-100">
+      <a href="#" className="relative h-[212px] lg:h-[360px] overflow-hidden rounded-[16px] group">
         <img
-          className="w-full h-full object-cover rounded-[16px]"
+          className="w-full h-full object-cover rounded-[16px] transition-transform duration-300 group-hover:scale-110"
           src={image}
           alt={title}
         />
       </a>
       <div className="flex flex-col gap-[16px]">
         <div className="flex flex-col gap-[8px] items-start">
-          <span className="bg-brand-green-light rounded-[999px] px-[12px] py-[4px] text-body-2 text-brand-green ">
+          <span className="bg-brand-green-light rounded-[999px] px-[12px] py-[4px] text-body-2 text-brand-green transition-all duration-200 hover:bg-brand-green hover:text-white cursor-default">
             {category}
           </span>
-          <a href="#">
-            <h2 className="text-start text-headline-4 text-brown-600 hover:underline">
+          <a href="#" className="w-full">
+            <h2 className="text-start text-headline-4 text-brown-600 hover:underline transition-all duration-200 hover:text-brown-700">
               {title}
             </h2>
           </a>
           <p className="text-body-2 text-brown-400 grow">{description}</p>
         </div>
         <div className="flex items-center gap-[16px] justify-start">
-          <div className="flex items-center gap-[8px]">
+          <div className="flex items-center gap-[8px] transition-all duration-200 hover:opacity-80">
             <img
               src={authorLogo}
               alt={author}
-              className="w-[24px] h-[24px]"
+              className="w-[24px] h-[24px] transition-transform duration-200 hover:scale-110"
             />
             <span className="text-body-2 text-brown-500">{author}</span>
           </div>
@@ -51,7 +51,7 @@ const BlogCard = ({
           <span className="text-body-2 text-brown-400">{date}</span>
         </div>
       </div>
-    </div>
+    </article>
   );
 };
 

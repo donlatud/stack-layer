@@ -19,7 +19,10 @@ const ArticleGrid = () => {
         ))}
       </div>
       <div className="flex justify-center items-center">
-        <WhiteButton children="View more" className="w-[86px] h-[24px] rounded-[5px] text-body-2" />
+        <WhiteButton 
+          children="View more" 
+          className="w-[86px] h-[24px] rounded-[5px] text-body-2 border-none underline hover:no-underline hover:scale-110 hover:font-semibold transition-all duration-300 active:scale-100" 
+        />
       </div>
     </div>
   );
