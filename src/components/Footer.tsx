@@ -3,7 +3,7 @@ import googleIcon from "../assets/google-logo.svg";
 
 const Footer = () => {
   return (
-    <div className="w-[375px] h-[152px] pt-[40px] pr-[16px] pb-[40px] pl-[16px] bg-brown-200 flex flex-col items-center justify-center gap-[24px] mt-[4310px] lg:w-[1440px] lg:h-[144px] lg:pt-[60px] lg:pr-[120px] lg:pb-[60px] lg:pl-[120px] lg:flex-row lg:items-center lg:justify-between ">
+    <div className="w-full pt-[40px] pr-[16px] pb-[40px] pl-[16px] bg-brown-200 flex flex-col items-center justify-center gap-[24px] lg:pt-[60px] lg:pr-[120px] lg:pb-[60px] lg:pl-[120px] lg:flex-row lg:items-center lg:justify-between">
       <div className="w-[226px] h-[24px] flex items-center justify-center gap-[24px] lg:w-[226px] lg:h-[24px]">
         <div className="w-[98px] h-[24px] text-body-1 text-brown-500 lg:w-[98px] lg:h-[24px] transition-all duration-300 hover:text-brown-600 cursor-default">
           Get in touch

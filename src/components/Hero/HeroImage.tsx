@@ -2,9 +2,9 @@ import heroImage from "../../assets/hero-image.png";
 
 const HeroImage = () => {
   return (
-    <div>
+    <div className="w-full max-w-[343px] lg:max-w-[386px]">
       <img
-        className="w-[343px] h-[470px] rounded-[16px] object-cover lg:w-[386px] lg:h-[529px]"
+        className="w-full h-[470px] rounded-[16px] object-cover lg:h-[529px]"
         src={heroImage}
         alt="hero image"
       />

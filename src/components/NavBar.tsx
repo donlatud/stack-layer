@@ -5,7 +5,7 @@ import BlackButton from "./common/BlackButton";
 
 const NavBar = () => {
   return (
-    <div className="w-full h-[48px] border-b border-brown-300 flex justify-between items-center pt-[12px] pr-[24px] pb-[12px] pl-[24px] bg-brown-100 lg:w-[1440px] lg:h-[80px] lg:pt-[16px] lg:pr-[120px] lg:pb-[16px] lg:pl-[120px]">
+    <div className="w-full h-[48px] border-b border-brown-300 flex justify-between items-center pt-[12px] pr-[24px] pb-[12px] pl-[24px] bg-brown-100 lg:h-[80px] lg:pt-[16px] lg:pr-[120px] lg:pb-[16px] lg:pl-[120px]">
       <img
         className="w-[24px] h-[24px] lg:w-[44px] lg:h-[44px] cursor-pointer transition-all duration-300 hover:opacity-80 hover:scale-110 active:scale-95"
         src={hhLogo}
