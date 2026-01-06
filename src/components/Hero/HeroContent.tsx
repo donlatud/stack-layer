@@ -1,4 +1,4 @@
-const Herocontent = () => {
+const HeroContent = () => {
   return (
     <div className="w-full max-w-[343px] flex flex-col gap-[16px] items-center lg:max-w-[347px] lg:h-[276px] lg:gap-[24px] lg:items-start">
       <div className="w-full text-headline-2 text-brown-600 text-center lg:hidden">
@@ -17,4 +17,5 @@ const Herocontent = () => {
   );
 };
 
-export default Herocontent;
+export default HeroContent;
+
