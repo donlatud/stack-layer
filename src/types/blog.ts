@@ -1,3 +1,7 @@
+/**
+ * BlogPost interface - Type definition for blog post data
+ * Defines the structure of a blog post object
+ */
 export interface BlogPost {
   id: number;
   image: string;

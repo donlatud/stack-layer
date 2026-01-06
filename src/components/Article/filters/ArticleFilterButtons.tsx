@@ -5,6 +5,11 @@ interface ArticleFilterButtonsProps {
   onChangeCategory: (category: string) => void;
 }
 
+/**
+ * ArticleFilterButtons component - Category filter buttons for desktop view
+ * Renders filter buttons for each category
+ * Highlights the selected category button
+ */
 const ArticleFilterButtons = ({
   selectedCategory,
   onChangeCategory,

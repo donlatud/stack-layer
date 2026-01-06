@@ -1,6 +1,12 @@
-import { Linkedin, Github } from "lucide-react";
+import linkedinLogo from "../../assets/linkedin-logo.png";
+import githubLogo from "../../assets/github-logo.png";
 import googleIcon from "../../assets/google-logo.svg";
 
+/**
+ * Footer component - Site footer with social links and navigation
+ * Displays "Get in touch" text, social media icons (LinkedIn, GitHub, Google)
+ * Includes "Home page" button
+ */
 const Footer = () => {
   return (
     <div className="w-full pt-[40px] pr-[16px] pb-[40px] pl-[16px] bg-brown-200 flex flex-col items-center justify-center gap-[24px] lg:pt-[60px] lg:pr-[120px] lg:pb-[60px] lg:pl-[120px] lg:flex-row lg:items-center lg:justify-between">
@@ -9,12 +15,16 @@ const Footer = () => {
           Get in touch
         </div>
         <div className="w-[104px] h-[24px] flex items-center justify-center gap-[16px] lg:w-[104px] lg:h-[24px] ">
-          <div className="w-[24px] h-[24px] rounded-full bg-brown-500 flex items-center justify-center shrink-0 aspect-square cursor-pointer transition-all duration-300 hover:bg-brown-600 hover:scale-125 active:scale-100">
-            <Linkedin className="w-[12.96px] h-[12.76px] text-white" />
-          </div>
-          <div className="w-[24px] h-[24px] rounded-full bg-brown-500 flex items-center justify-center shrink-0 aspect-square cursor-pointer transition-all duration-300 hover:bg-brown-600 hover:scale-125 active:scale-100">
-            <Github className="w-[12.96px] h-[12.76px] text-white" />
-          </div>
+          <img
+            src={linkedinLogo}
+            alt="linkedin icon"
+            className="w-[24px] h-[24px] cursor-pointer transition-all duration-300 hover:scale-125 active:scale-100 hover:opacity-90"
+          />
+          <img
+            src={githubLogo}
+            alt="github icon"
+            className="w-[24px] h-[24px] cursor-pointer transition-all duration-300 hover:scale-125 active:scale-100 hover:opacity-90"
+          />
           <img
             src={googleIcon}
             alt="google icon"
@@ -30,4 +40,3 @@ const Footer = () => {
 };
 
 export default Footer;
-

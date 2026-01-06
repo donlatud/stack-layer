@@ -1,11 +1,36 @@
+import { useState, useEffect } from "react";
 import hhLogo from "../../assets/hh-logo.svg";
 import hamburgerMenu from "../../assets/hamburger-bar.svg";
 import WhiteButton from "../common/WhiteButton";
 import BlackButton from "../common/BlackButton";
 
+/**
+ * NavBar component - Sticky navigation bar
+ * Adds shadow effect when page is scrolled
+ * Shows logo, hamburger menu (mobile), and login/signup buttons (desktop)
+ */
 const NavBar = () => {
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  /**
+   * Listens to scroll events to determine if page is scrolled
+   * Updates isScrolled state to add shadow effect
+   */
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 0);
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
   return (
-    <div className="w-full h-[48px] border-b border-brown-300 flex justify-between items-center pt-[12px] pr-[24px] pb-[12px] pl-[24px] bg-brown-100 lg:h-[80px] lg:pt-[16px] lg:pr-[120px] lg:pb-[16px] lg:pl-[120px]">
+    <div
+      className={`sticky top-0 z-50 w-full h-[48px] border-b border-brown-300 flex justify-between items-center pt-[12px] pr-[24px] pb-[12px] pl-[24px] bg-brown-100 backdrop-blur-sm transition-shadow duration-300 lg:h-[80px] lg:pt-[16px] lg:pr-[120px] lg:pb-[16px] lg:pl-[120px] ${
+        isScrolled ? "shadow-md shadow-brown-300/20" : ""
+      }`}
+    >
       <img
         className="w-[24px] h-[24px] lg:w-[44px] lg:h-[44px] cursor-pointer transition-all duration-300 hover:opacity-80 hover:scale-110 active:scale-95"
         src={hhLogo}

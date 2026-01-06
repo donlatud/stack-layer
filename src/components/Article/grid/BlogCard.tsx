@@ -9,6 +9,11 @@ interface BlogCardProps {
   date: string;
 }
 
+/**
+ * BlogCard component - Displays a single blog post card
+ * Shows post image, category, title, description, author, and date
+ * Includes hover effects for better interactivity
+ */
 const BlogCard = ({
   image,
   category,

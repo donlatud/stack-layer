@@ -1,3 +1,8 @@
+/**
+ * HeroContent component - Main hero text content
+ * Displays hero title and description
+ * Responsive layout: centered on mobile, right-aligned on desktop
+ */
 export const HeroContent = () => {
   return (
     <div className="w-full max-w-[343px] flex flex-col gap-[16px] items-center lg:max-w-[347px] lg:h-[276px] lg:gap-[24px] lg:items-start">

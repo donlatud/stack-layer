@@ -1,5 +1,9 @@
 import type { BlogPost } from "../types/blog";
 
+/**
+ * Blog posts data - Array of blog post objects
+ * Contains sample blog posts with images, categories, titles, descriptions, etc.
+ */
 export const blogPosts: BlogPost[] = [
   {
     id: 1,
@@ -86,4 +90,3 @@ export const blogPosts: BlogPost[] = [
       "## 1. Understanding Feline Nutritional Needs\n\nExplore the unique dietary requirements of cats as obligate carnivores.\n\n## 2. Choosing the Right Cat Food\n\nLearn how to read cat food labels and select high-quality options for your pet.\n\n## 3. Wet vs. Dry Food\n\nUnderstand the pros and cons of wet and dry cat food and how to incorporate both into your cat's diet.\n\n## 4. Portion Control and Feeding Schedule\n\nDiscover how to determine the right portion sizes and establish a healthy feeding routine.\n\n## 5. Special Dietary Considerations\n\nLearn about nutrition for cats with specific health conditions or at different life stages.",
   },
 ];
-

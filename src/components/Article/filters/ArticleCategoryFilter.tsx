@@ -12,6 +12,11 @@ interface ArticleCategoryFilterProps {
   onChangeCategory: (category: string) => void;
 }
 
+/**
+ * ArticleCategoryFilter component - Category dropdown filter for mobile view
+ * Uses Select component from shadcn/ui
+ * Allows users to filter articles by category
+ */
 const ArticleCategoryFilter = ({
   selectedCategory,
   onChangeCategory,

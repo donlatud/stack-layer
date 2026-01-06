@@ -7,16 +7,26 @@ import ArticleGrid from "./grid/ArticleGrid";
 import { blogPosts } from "../../data/blogPosts";
 import { CATEGORIES } from "../../constants/categories";
 
+/**
+ * ArticleSection component - Main container for article listing
+ * Manages category filter and search query state
+ * Filters blog posts based on selected category and search query
+ */
 const ArticleSection = () => {
   const [selectedCategory, setSelectedCategory] = useState<string>(
     CATEGORIES[0]
   );
   const [searchQuery, setSearchQuery] = useState<string>("");
 
+  /**
+   * Filters blog posts based on search query and category
+   * If search query exists, searches across all posts (ignores category)
+   * Otherwise, filters by selected category
+   */
   const filteredPosts = useMemo(
     () =>
       blogPosts.filter((post) => {
-        // ถ้ามี search query → search จากทั้งหมด (ไม่สน category)
+        // If search query exists, search from all posts (ignore category)
         if (searchQuery.trim() !== "") {
           return (
             post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -24,7 +34,7 @@ const ArticleSection = () => {
           );
         }
 
-        // ถ้าไม่มี search query → filter ด้วย category ตามเดิม
+        // If no search query, filter by category
         return (
           selectedCategory === CATEGORIES[0] ||
           post.category === selectedCategory

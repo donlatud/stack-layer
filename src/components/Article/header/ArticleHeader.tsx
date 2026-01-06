@@ -1,3 +1,7 @@
+/**
+ * ArticleHeader component - Section header for article listing
+ * Displays "Latest articles" title with responsive typography
+ */
 const ArticleHeader = () => {
   return (
     <div className="w-full px-[16px]">

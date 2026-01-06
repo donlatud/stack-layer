@@ -1,3 +1,8 @@
+/**
+ * AuthorCard component - Author information card in hero section
+ * Displays author name and bio
+ * Responsive layout with different alignments for mobile/desktop
+ */
 const AuthorCard = () => {
   return (
     <div className="w-full max-w-[343px] flex flex-col gap-[12px] lg:max-w-[347px] lg:h-[284px] lg:gap-[12px] lg:items-start lg:justify-center">

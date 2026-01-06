@@ -6,6 +6,11 @@ interface WhiteButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement>
   children: React.ReactNode
 }
 
+/**
+ * WhiteButton component - Reusable white/outline button
+ * Extends Button component with custom styling
+ * Includes hover and active state effects
+ */
 const WhiteButton = ({ children, className, ...props }: WhiteButtonProps) => {
   return (
     <Button

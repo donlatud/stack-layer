@@ -6,6 +6,11 @@ interface BlackButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement>
   children: React.ReactNode
 }
 
+/**
+ * BlackButton component - Reusable black/solid button
+ * Extends Button component with custom styling
+ * Includes hover and active state effects
+ */
 const BlackButton = ({ children, className, ...props }: BlackButtonProps) => {
   return (
     <Button

@@ -6,6 +6,11 @@ interface ArticleSearchBarProps {
   onChange: (value: string) => void;
 }
 
+/**
+ * ArticleSearchBar component - Search input for filtering articles
+ * Controlled component that searches article titles and descriptions
+ * Includes search icon with hover effects
+ */
 const ArticleSearchBar = ({ value, onChange }: ArticleSearchBarProps) => {
   return (
     <div className="relative w-full group">
