@@ -1,5 +1,5 @@
 import { Linkedin, Github } from "lucide-react";
-import googleIcon from "../assets/google-logo.svg";
+import googleIcon from "../../assets/google-logo.svg";
 
 const Footer = () => {
   return (
@@ -30,3 +30,4 @@ const Footer = () => {
 };
 
 export default Footer;
+

@@ -1,7 +1,7 @@
-import hhLogo from "../assets/hh-logo.svg";
-import hamburgerMenu from "../assets/hamburger-bar.svg";
-import WhiteButton from "./common/WhiteButton";
-import BlackButton from "./common/BlackButton";
+import hhLogo from "../../assets/hh-logo.svg";
+import hamburgerMenu from "../../assets/hamburger-bar.svg";
+import WhiteButton from "../common/WhiteButton";
+import BlackButton from "../common/BlackButton";
 
 const NavBar = () => {
   return (
@@ -25,3 +25,4 @@ const NavBar = () => {
 };
 
 export default NavBar;
+
