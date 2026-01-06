@@ -1,4 +1,4 @@
-import HeroContent from "./Hero/HeroContent";
+import {HeroContent} from "./Hero/HeroContent";
 import HeroImage from "./Hero/HeroImage";
 import AuthorCard from "./Hero/AuthorCard";
 
