@@ -35,8 +35,8 @@ const ArticleGrid = ({ posts }: ArticleGridProps) => {
   };
 
   return (
-    <div className="flex flex-col gap-[48px] px-[16px]">
-      <div className="grid grid-cols-1 gap-[48px] lg:grid-cols-2">
+    <div className="flex flex-col gap-[48px] px-[16px] md:px-[40px]">
+      <div className="grid grid-cols-1 gap-[48px] md:grid-cols-2 lg:grid-cols-2">
         {visiblePosts.map((post) => (
           <BlogCard
             key={post.id}

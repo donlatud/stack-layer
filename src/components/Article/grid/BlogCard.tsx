@@ -24,7 +24,7 @@ const BlogCard = ({
 }: BlogCardProps) => {
   return (
     <article className="flex flex-col gap-[16px] w-full cursor-pointer transition-all duration-300 hover:scale-[1.02] hover:shadow-lg hover:shadow-brown-300/20 active:scale-100">
-      <a href="#" className="relative h-[212px] lg:h-[360px] overflow-hidden rounded-[16px] group">
+      <a href="#" className="relative h-[212px] lg:h-[300px] xl:h-[360px] overflow-hidden rounded-[16px] group">
         <img
           className="w-full h-full object-cover rounded-[16px] transition-transform duration-300 group-hover:scale-110"
           src={image}

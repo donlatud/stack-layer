@@ -100,8 +100,10 @@
 
   --color-white: #ffffff;
 
-  /* Breakpoints - Override lg to 1440px */
-  --breakpoint-lg: 1440px;
+  /* Breakpoints */
+  --breakpoint-lg: 1024px;   /* Desktop */
+  --breakpoint-xl: 1280px;   /* Large Desktop */
+  --breakpoint-2xl: 1440px;  /* Extra Large Desktop (Figma base) */
 }
 
 /* shadcn/ui Utility Classes - using CSS variables */
