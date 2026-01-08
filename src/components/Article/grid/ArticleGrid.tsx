@@ -40,6 +40,7 @@ const ArticleGrid = ({ posts }: ArticleGridProps) => {
         {visiblePosts.map((post) => (
           <BlogCard
             key={post.id}
+            id={post.id}
             image={post.image}
             category={post.category}
             title={post.title}
