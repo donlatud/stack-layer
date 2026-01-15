@@ -1,24 +1,115 @@
+import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft } from "lucide-react"; // เพิ่ม import นี้
+import { ArrowLeft } from "lucide-react";
 import NavBar from "../components/layout/NavBar";
 import Footer from "../components/layout/Footer";
-import { blogPosts } from "../data/blogPosts";
+import { fetchBlogPosts } from "../data/blogPosts";
+import { buildApiParams } from "../utils/blogUtils";
+import { DEFAULT_PAGE } from "../constants/pagination";
+import type { BlogPost } from "../types/blog";
 
 /**
  * ArticleDetailPage component - Displays full article content
  * Fetches article by ID from URL parameter
+ * Searches through all pages if necessary to find the article
  */
 const ArticleDetailPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const [article, setArticle] = useState<BlogPost | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Find article by ID
-  const article = blogPosts.find((post) => post.id === parseInt(id || "0", 10));
+  useEffect(() => {
+    const loadArticle = async () => {
+      setIsLoading(true);
+      setError(null);
 
-  // If article not found, redirect to home
-  if (!article) {
-    navigate("/");
-    return null;
+      if (!id) {
+        setError("Invalid article ID");
+        setIsLoading(false);
+        return;
+      }
+
+      const targetId = parseInt(id, 10);
+      if (isNaN(targetId)) {
+        setError("Invalid article ID");
+        setIsLoading(false);
+        return;
+      }
+
+      try {
+        let currentPage = DEFAULT_PAGE;
+        let foundArticle: BlogPost | null = null;
+        let hasMorePages = true;
+
+        // Search through all pages until we find the article
+        while (hasMorePages && !foundArticle) {
+          const params = buildApiParams(currentPage, "Highlight");
+          const response = await fetchBlogPosts(params);
+
+          // Check if article exists in current page
+          foundArticle =
+            response.posts.find((post) => post.id === targetId) || null;
+
+          if (foundArticle) {
+            break;
+          }
+
+          // Check if there are more pages to search
+          hasMorePages =
+            response.nextPage !== null &&
+            response.currentPage < response.totalPages;
+
+          if (hasMorePages) {
+            currentPage = response.nextPage!;
+          }
+        }
+
+        if (!foundArticle) {
+          setError("Article not found");
+          setTimeout(() => navigate("/"), 2000);
+          return;
+        }
+
+        setArticle(foundArticle);
+      } catch (err) {
+        console.error("Error loading article:", err);
+        setError("Failed to load article. Please try again later.");
+        setTimeout(() => navigate("/"), 2000);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadArticle();
+  }, [id, navigate]);
+
+  // If article not found or error, show message
+  if (isLoading) {
+    return (
+      <div className="w-full min-h-screen font-family-poppins flex flex-col">
+        <NavBar />
+        <div className="flex-1 flex justify-center items-center">
+          <p className="text-body-1 text-brown-400">Loading...</p>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
+  if (error || !article) {
+    return (
+      <div className="w-full min-h-screen font-family-poppins flex flex-col">
+        <NavBar />
+        <div className="flex-1 flex justify-center items-center">
+          <p className="text-body-1 text-brand-red">
+            {error || "Article not found"}
+          </p>
+        </div>
+        <Footer />
+      </div>
+    );
   }
 
   // Parse content (assuming markdown-like format with ## headings)

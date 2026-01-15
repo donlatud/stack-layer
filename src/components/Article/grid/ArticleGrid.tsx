@@ -1,43 +1,41 @@
-import { useState, useEffect } from "react";
 import BlogCard from "./BlogCard";
 import WhiteButton from "../../common/WhiteButton";
 import type { BlogPost } from "../../../types/blog";
 
 interface ArticleGridProps {
   posts: BlogPost[];
+  hasMore: boolean;
+  isLoadingMore: boolean;
+  onLoadMore: () => void;
 }
 
 /**
- * ArticleGrid component - Displays blog posts in a responsive grid layout
- * Implements pagination: shows 4 posts initially, loads 4 more on "View more" click
+ * Gets className for View More button based on loading state
  */
-const ArticleGrid = ({ posts }: ArticleGridProps) => {
-  const [visibleCount, setVisibleCount] = useState(4);
+const getViewMoreButtonClassName = (isLoadingMore: boolean): string => {
+  const baseClasses =
+    "w-[86px] h-[24px] rounded-[5px] text-body-2 border-none underline transition-all duration-300";
+  const enabledClasses =
+    "hover:no-underline hover:scale-110 hover:font-semibold active:scale-100 cursor-pointer";
+  const disabledClasses = "opacity-50 cursor-not-allowed";
 
-  /**
-   * Reset visible count when posts change (e.g., when filter/search changes)
-   */
-  useEffect(() => {
-    setVisibleCount(4);
-  }, [posts]);
+  return `${baseClasses} ${!isLoadingMore ? enabledClasses : disabledClasses}`;
+};
 
-  const visiblePosts = posts.slice(0, visibleCount);
-  const hasMore = visibleCount < posts.length;
-
-  /**
-   * Handles "View more" button click
-   * Increases visible count by 4 if there are more posts to show
-   */
-  const handleViewMore = () => {
-    if (hasMore) {
-      setVisibleCount((prev) => prev + 4);
-    }
-  };
-
+/**
+ * ArticleGrid component - Displays blog posts in a responsive grid layout
+ * Implements pagination: shows posts from API, loads more on "View more" click
+ */
+const ArticleGrid = ({
+  posts,
+  hasMore,
+  isLoadingMore,
+  onLoadMore,
+}: ArticleGridProps) => {
   return (
     <div className="flex flex-col gap-[48px] px-[16px] md:px-[40px]">
       <div className="grid grid-cols-1 gap-[48px] md:grid-cols-2 lg:grid-cols-2">
-        {visiblePosts.map((post) => (
+        {posts.map((post) => (
           <BlogCard
             key={post.id}
             id={post.id}
@@ -50,18 +48,19 @@ const ArticleGrid = ({ posts }: ArticleGridProps) => {
           />
         ))}
       </div>
-      <div className="flex justify-center items-center">
-        <WhiteButton
-          onClick={handleViewMore}
-          disabled={!hasMore}
-          children="View more"
-          className={`w-[86px] h-[24px] rounded-[5px] text-body-2 border-none underline transition-all duration-300 ${
-            hasMore
-              ? "hover:no-underline hover:scale-110 hover:font-semibold active:scale-100 cursor-pointer"
-              : "opacity-50 cursor-not-allowed"
-          }`}
-        />
-      </div>
+      {hasMore && (
+        <div className="flex flex-col justify-center items-center gap-[16px]">
+          {isLoadingMore && (
+            <p className="text-body-1 text-brown-400">Loading...</p>
+          )}
+          <WhiteButton
+            onClick={onLoadMore}
+            disabled={isLoadingMore}
+            children="View more"
+            className={getViewMoreButtonClassName(isLoadingMore)}
+          />
+        </div>
+      )}
     </div>
   );
 };

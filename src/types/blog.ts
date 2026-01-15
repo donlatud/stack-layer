@@ -14,3 +14,24 @@ export interface BlogPost {
   content: string;
 }
 
+/**
+ * API Response interface for blog posts
+ */
+export interface BlogPostsResponse {
+  totalPosts: number;
+  totalPages: number;
+  currentPage: number;
+  limit: number;
+  posts: BlogPost[];
+  nextPage: number | null;
+}
+
+/**
+ * Query parameters for fetching blog posts
+ */
+export interface FetchBlogPostsParams {
+  page?: number;
+  limit?: number;
+  category?: string;
+  keyword?: string;
+}
