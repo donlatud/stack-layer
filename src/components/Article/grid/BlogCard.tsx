@@ -28,7 +28,7 @@ const BlogCard = ({
   return (
     <article className="flex flex-col gap-[16px] w-full cursor-pointer transition-all duration-300 hover:scale-[1.02] hover:shadow-lg hover:shadow-brown-300/20 active:scale-100">
       <Link
-        to={`/article/${id}`}
+        to={`/post/${id}`}
         className="relative h-[212px] lg:h-[300px] xl:h-[360px] overflow-hidden rounded-[16px] group"
       >
         <img
@@ -42,7 +42,7 @@ const BlogCard = ({
           <span className="bg-brand-green-light rounded-[999px] px-[12px] py-[4px] text-body-2 text-brand-green transition-all duration-200 hover:bg-brand-green hover:text-white cursor-default">
             {category}
           </span>
-          <Link to={`/article/${id}`} className="w-full">
+          <Link to={`/post/${id}`} className="w-full">
             <h2 className="text-start text-headline-4 text-brown-600 hover:underline transition-all duration-200 hover:text-brown-700">
               {title}
             </h2>

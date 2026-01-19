@@ -30,14 +30,16 @@ const ArticleSection = () => {
   /**
    * Filter posts by search query using useMemo for performance
    * Only re-calculates when apiPosts or searchQuery changes
+   * Client-side filtering only - no API call on search query change
    */
   const filteredPosts = useMemo(() => {
     return filterPostsBySearch(apiPosts, searchQuery);
   }, [apiPosts, searchQuery]);
 
   /**
-   * Fetches blog posts from API when category or search query changes
-   * Resets to page 1 when filter changes
+   * Fetches blog posts from API when category changes only
+   * Search query is handled by client-side filtering to avoid unnecessary API calls
+   * Resets to page 1 when category changes
    */
   useEffect(() => {
     const loadPosts = async () => {
@@ -46,10 +48,11 @@ const ArticleSection = () => {
       setCurrentPage(DEFAULT_PAGE);
 
       try {
-        const params = buildApiParams(DEFAULT_PAGE, selectedCategory, searchQuery);
+        // Don't send searchQuery to API - use client-side filtering instead
+        const params = buildApiParams(DEFAULT_PAGE, selectedCategory);
         const response = await fetchBlogPosts(params);
 
-        // Store API posts (may include posts matching description/content)
+        // Store API posts (will be filtered client-side by searchQuery)
         setApiPosts(response.posts);
         setHasMore(checkHasMore(response));
       } catch (err) {
@@ -63,7 +66,7 @@ const ArticleSection = () => {
     };
 
     loadPosts();
-  }, [selectedCategory, searchQuery]);
+  }, [selectedCategory]);
 
   /**
    * Loads more posts (next page) and appends to existing posts
@@ -99,7 +102,11 @@ const ArticleSection = () => {
         <ArticleHeader />
         {/* Mobile Layout: Search and Category Filter stacked */}
         <div className="flex flex-col gap-[16px] p-[16px] bg-brown-200 lg:hidden">
-          <ArticleSearchBar value={searchQuery} onChange={setSearchQuery} />
+          <ArticleSearchBar
+            value={searchQuery}
+            onChange={setSearchQuery}
+            allPosts={apiPosts}
+          />
           <ArticleCategoryFilter
             selectedCategory={selectedCategory}
             onChangeCategory={setSelectedCategory}
@@ -112,7 +119,11 @@ const ArticleSection = () => {
             onChangeCategory={setSelectedCategory}
           />
           <div className="flex-1 max-w-[360px]">
-            <ArticleSearchBar value={searchQuery} onChange={setSearchQuery} />
+            <ArticleSearchBar
+              value={searchQuery}
+              onChange={setSearchQuery}
+              allPosts={apiPosts}
+            />
           </div>
         </div>
         {/* Grid */}

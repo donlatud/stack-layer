@@ -32,7 +32,7 @@ export const buildApiParams = (
 };
 
 /**
- * Filters posts by search query (searches in title and description)
+ * Filters posts by search query (searches in title, description, and content)
  * @param posts - Array of blog posts
  * @param searchQuery - Search query string
  * @returns Filtered array of blog posts
@@ -47,7 +47,8 @@ export const filterPostsBySearch = (
   return posts.filter(
     (post) =>
       post.title.toLowerCase().includes(query) ||
-      post.description.toLowerCase().includes(query)
+      post.description.toLowerCase().includes(query) ||
+      post.content.toLowerCase().includes(query)
   );
 };
 
