@@ -37,7 +37,7 @@ const ArticleLikeAndShare = ({
       </button>
 
       {/* Copy Link and Share Buttons - Right Side */}
-      <div className="flex items-center gap-[12px] flex-wrap">
+      <div className="flex items-center justify-center gap-[12px] flex-wrap">
         {/* Copy Link Button */}
         <button
           onClick={onCopyLink}
