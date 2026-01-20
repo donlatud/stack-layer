@@ -325,3 +325,34 @@
 .toast-success-custom button[data-close-button]:hover {
   opacity: 0.8 !important;
 }
+
+/* Sonner Toast Error Custom Styles */
+.toast-error-custom {
+  background-color: #ef4444 !important;
+  border-radius: 12px !important;
+  padding: 16px 20px !important;
+}
+
+.toast-error-custom [data-title] {
+  color: #ffffff !important;
+  font-weight: 600 !important;
+  font-size: 16px !important;
+  line-height: 24px !important;
+}
+
+.toast-error-custom [data-description] {
+  color: #ffffff !important;
+  font-size: 14px !important;
+  line-height: 20px !important;
+  opacity: 1 !important;
+  margin-top: 4px !important;
+}
+
+.toast-error-custom button[data-close-button] {
+  color: #ffffff !important;
+  opacity: 1 !important;
+}
+
+.toast-error-custom button[data-close-button]:hover {
+  opacity: 0.8 !important;
+}

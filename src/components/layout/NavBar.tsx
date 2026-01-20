@@ -77,8 +77,8 @@ const NavBar = () => {
         />
         {/* Desktop menu */}
         <div className="hidden lg:flex lg:gap-[8px] lg:w-[276px] lg:h-[48px]">
-          <WhiteButton children="Log in" />
-          <BlackButton children="Sign up" />
+          <WhiteButton children="Log in" onClick={() => navigate("/login")} />
+          <BlackButton children="Sign up" onClick={() => navigate("/signup")} />
         </div>
       </div>
 
@@ -103,12 +103,18 @@ const NavBar = () => {
             <WhiteButton
               children="Log in"
               className="w-full"
-              onClick={() => setIsMenuOpen(false)}
+              onClick={() => {
+                setIsMenuOpen(false);
+                navigate("/login");
+              }}
             />
             <BlackButton
               children="Sign up"
               className="w-full"
-              onClick={() => setIsMenuOpen(false)}
+              onClick={() => {
+                setIsMenuOpen(false);
+                navigate("/signup");
+              }}
             />
           </div>
         </div>
