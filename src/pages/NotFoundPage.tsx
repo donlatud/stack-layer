@@ -1,19 +1,27 @@
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext";
 import NavBar from "../components/layout/NavBar";
+import MemberNavBar from "../components/layout/MemberNavBar";
 import Footer from "../components/layout/Footer";
 import BlackButton from "../components/common/BlackButton";
 
 /**
  * NotFoundPage component - 404 error page
  * Displays error message with icon and navigation button
- * Uses existing NavBar and Footer components
+ * Uses MemberNavBar if logged in, NavBar if not logged in
  */
 const NotFoundPage = () => {
   const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
+
+  const handleGoToHomepage = () => {
+    // If logged in, go to member homepage, otherwise go to public homepage
+    navigate(isAuthenticated ? "/member" : "/");
+  };
 
   return (
     <div className="w-full min-h-screen font-family-poppins flex flex-col">
-      <NavBar />
+      {isAuthenticated ? <MemberNavBar /> : <NavBar />}
       
       <section className="flex-1 flex flex-col items-center justify-center bg-white pt-[40px] pr-[16px] pb-[40px] pl-[16px]">
         <div className="flex flex-col items-center gap-[24px]">
@@ -29,7 +37,7 @@ const NotFoundPage = () => {
           
           {/* Go To Homepage Button */}
           <BlackButton
-            onClick={() => navigate("/")}
+            onClick={handleGoToHomepage}
             className="mt-[8px] shadow-md shadow-brown-600/20"
           >
             Go To Homepage

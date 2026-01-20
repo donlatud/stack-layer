@@ -1,9 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import hhLogo from "../../assets/hh-logo.svg";
 import hamburgerMenu from "../../assets/hamburger-bar.svg";
-import { User, Lock, LogOut, Bell } from "lucide-react";
+import { Bell, ChevronDown } from "lucide-react";
+import UserDropdownMenu from "./UserDropdownMenu";
 
 /**
  * MemberNavBar component - Navigation bar for logged-in users
@@ -13,8 +14,11 @@ import { User, Lock, LogOut, Bell } from "lucide-react";
 const MemberNavBar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const profileButtonRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -35,15 +39,29 @@ const MemberNavBar = () => {
       ) {
         setIsMenuOpen(false);
       }
-    };
-
-    const handleEscape = (event: KeyboardEvent) => {
-      if (event.key === "Escape" && isMenuOpen) {
-        setIsMenuOpen(false);
+      if (
+        isDropdownOpen &&
+        dropdownRef.current &&
+        profileButtonRef.current &&
+        !dropdownRef.current.contains(target) &&
+        !profileButtonRef.current.contains(target)
+      ) {
+        setIsDropdownOpen(false);
       }
     };
 
-    if (isMenuOpen) {
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        if (isMenuOpen) {
+          setIsMenuOpen(false);
+        }
+        if (isDropdownOpen) {
+          setIsDropdownOpen(false);
+        }
+      }
+    };
+
+    if (isMenuOpen || isDropdownOpen) {
       document.addEventListener("mousedown", handleClickOutside);
       document.addEventListener("keydown", handleEscape);
     }
@@ -52,33 +70,120 @@ const MemberNavBar = () => {
       document.removeEventListener("mousedown", handleClickOutside);
       document.removeEventListener("keydown", handleEscape);
     };
-  }, [isMenuOpen]);
+  }, [isMenuOpen, isDropdownOpen]);
 
   const handleLogout = () => {
     logout();
     navigate("/");
     setIsMenuOpen(false);
+    setIsDropdownOpen(false);
+  };
+
+  const handleProfileClick = () => {
+    // TODO: Navigate to profile page
+    setIsMenuOpen(false);
+    setIsDropdownOpen(false);
+  };
+
+  const handleResetPasswordClick = () => {
+    // TODO: Navigate to reset password page
+    setIsMenuOpen(false);
+    setIsDropdownOpen(false);
   };
 
   return (
     <>
-      <div
+      <nav
         className={`sticky top-0 z-50 w-full h-[48px] border-b border-brown-300 flex justify-between items-center pt-[12px] pr-[24px] pb-[12px] pl-[24px] bg-brown-100 backdrop-blur-sm transition-shadow duration-300 md:h-[56px] md:pt-[13px] md:pr-[40px] md:pb-[13px] md:pl-[40px] lg:h-[80px] lg:pt-[14px] lg:pr-[80px] lg:pb-[14px] lg:pl-[80px] xl:h-[80px] xl:pt-[16px] xl:pr-[120px] xl:pb-[16px] xl:pl-[120px] ${isScrolled ? "shadow-md shadow-brown-300/20" : ""
           }`}
       >
+        {/* Logo - Mobile and Tablet */}
         <img
-          className="w-[24px] h-[24px] lg:w-[36px] lg:h-[36px] xl:w-[44px] xl:h-[44px] cursor-pointer transition-all duration-300 hover:opacity-80 hover:scale-110 active:scale-95"
+          className="w-[24px] h-[24px] md:w-[28px] md:h-[28px] lg:hidden cursor-pointer transition-all duration-300 hover:opacity-80 hover:scale-110 active:scale-95"
           src={hhLogo}
           alt="hh logo"
           onClick={() => navigate("/member")}
         />
-        <img
-          className="hamburger-button w-[24px] h-[24px] lg:hidden cursor-pointer transition-opacity hover:opacity-70 active:opacity-50"
-          src={hamburgerMenu}
-          alt="hamburger bar"
-          onClick={() => setIsMenuOpen(!isMenuOpen)}
-        />
-      </div>
+
+        {/* Logo Text - Desktop (lg+) */}
+        <span
+          className="hidden lg:block text-brown-600 text-headline-3 font-semibold cursor-pointer transition-opacity hover:opacity-80"
+          onClick={() => navigate("/member")}
+        >
+          hh.
+        </span>
+
+        {/* Right side - Mobile: Hamburger, Tablet/Mobile: Hamburger, Desktop: Notification + Profile */}
+        <div className="flex items-center gap-[16px]">
+          {/* Desktop (lg+) - Notification Bell and Profile Dropdown */}
+          <div className="hidden lg:flex items-center gap-[16px]">
+            {/* Notification Bell */}
+            <button
+              className="relative w-[40px] h-[40px] rounded-full bg-white border border-brown-300 flex items-center justify-center hover:bg-brown-50 transition-colors"
+              aria-label="Notifications"
+            >
+              <Bell className="w-[20px] h-[20px] text-brown-600" />
+              <span className="absolute top-[6px] right-[6px] w-[10px] h-[10px] bg-red-500 rounded-full border-2 border-white"></span>
+            </button>
+
+            {/* Profile Dropdown Button */}
+            <div className="relative">
+              <button
+                ref={profileButtonRef}
+                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                className="flex items-center gap-[12px] hover:opacity-80 transition-opacity"
+                aria-label="User menu"
+              >
+                {/* Profile Picture */}
+                <div className="w-[40px] h-[40px] rounded-full bg-brown-300 flex items-center justify-center shrink-0 overflow-hidden">
+                  {user?.avatar ? (
+                    <img
+                      src={user.avatar}
+                      alt={user.name}
+                      className="w-full h-full rounded-full object-cover"
+                    />
+                  ) : (
+                    <span className="text-brown-600 text-body-1 font-medium">
+                      {user?.name?.charAt(0).toUpperCase() || "U"}
+                    </span>
+                  )}
+                </div>
+                {/* User Name */}
+                <span className="text-body-1 text-brown-600 font-medium">
+                  {user?.name || "User"}
+                </span>
+                {/* Dropdown Arrow */}
+                <ChevronDown
+                  className={`w-[16px] h-[16px] text-brown-600 transition-transform ${isDropdownOpen ? "rotate-180" : ""
+                    }`}
+                />
+              </button>
+
+              {/* Dropdown Menu */}
+              {isDropdownOpen && (
+                <div
+                  ref={dropdownRef}
+                  className="absolute right-0 top-[52px] z-50 min-w-[200px]"
+                >
+                  <UserDropdownMenu
+                    onProfileClick={handleProfileClick}
+                    onResetPasswordClick={handleResetPasswordClick}
+                    onLogoutClick={handleLogout}
+                  />
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Mobile/Tablet - Hamburger Menu */}
+          <img
+            className="hamburger-button w-[24px] h-[24px] lg:hidden cursor-pointer transition-opacity hover:opacity-70 active:opacity-50"
+            src={hamburgerMenu}
+            alt="hamburger bar"
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+          />
+        </div>
+      </nav>
 
       {/* Mobile menu overlay */}
       {isMenuOpen && (
@@ -88,17 +193,17 @@ const MemberNavBar = () => {
         />
       )}
 
-      {/* Mobile menu - dropdown from top */}
+      {/* Mobile/Tablet menu - dropdown from top */}
       <div
-        className={`member-menu fixed top-[48px] left-0 right-0 z-40 bg-brown-100 border-b border-brown-300 shadow-lg shadow-brown-300/30 lg:hidden transition-all duration-300 ease-in-out ${isMenuOpen
+        className={`member-menu fixed top-[48px] md:top-[56px] left-0 right-0 z-40 bg-brown-100 border-b border-brown-300 shadow-lg shadow-brown-300/30 lg:hidden transition-all duration-300 ease-in-out ${isMenuOpen
             ? "opacity-100 translate-y-0"
             : "opacity-0 -translate-y-full pointer-events-none"
           }`}
       >
         <div className="flex flex-col">
-          {/* User Profile Section */}
-          <div className="flex items-center gap-[12px] px-[24px] py-[20px]">
-            <div className="w-[48px] h-[48px] rounded-full bg-brown-300 flex items-center justify-center shrink-0">
+          {/* User Profile Section - Mobile/Tablet */}
+          <div className="member-nav flex items-center gap-[12px] px-[24px] py-[20px] md:px-[40px] md:py-[24px]">
+            <div className="w-[48px] h-[48px] md:w-[56px] md:h-[56px] rounded-full bg-brown-300 flex items-center justify-center shrink-0">
               {user?.avatar ? (
                 <img
                   src={user.avatar}
@@ -106,51 +211,32 @@ const MemberNavBar = () => {
                   className="w-full h-full rounded-full object-cover"
                 />
               ) : (
-                <span className="text-brown-600 text-body-1 font-medium">
+                <span className="text-brown-600 text-body-1 md:text-headline-4 font-medium">
                   {user?.name?.charAt(0).toUpperCase() || "U"}
                 </span>
               )}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-body-1 text-brown-600 font-medium truncate">
+              <p className="text-body-1 md:text-headline-4 text-brown-600 font-medium truncate">
                 {user?.name || "User"}
               </p>
             </div>
-            <div className="w-[32px] h-[32px] rounded-full border border-brown-300 bg-white flex items-center justify-center shrink-0">
-              <Bell className="w-[18px] h-[18px] text-brown-600" />
-            </div>
+            <button
+              className="w-[32px] h-[32px] md:w-[40px] md:h-[40px] rounded-full border border-brown-300 bg-white flex items-center justify-center shrink-0 hover:bg-brown-50 transition-colors"
+              aria-label="Notifications"
+            >
+              <Bell className="w-[18px] h-[18px] md:w-[20px] md:h-[20px] text-brown-600" />
+            </button>
           </div>
 
-          {/* Menu Items */}
-          <div className="flex flex-col px-[24px] py-[20px] gap-[8px]">
-            <button
-              onClick={() => {
-                // TODO: Navigate to profile page
-                setIsMenuOpen(false);
-              }}
-              className="flex items-center gap-[12px] px-[12px] py-[12px] rounded-[8px] hover:bg-brown-200 transition-colors text-left"
-            >
-              <User className="w-[20px] h-[20px] text-brown-600 shrink-0" />
-              <span className="text-body-1 text-brown-600">Profile</span>
-            </button>
-            <button
-              onClick={() => {
-                // TODO: Navigate to reset password page
-                setIsMenuOpen(false);
-              }}
-              className="flex items-center gap-[12px] px-[12px] py-[12px] rounded-[8px] hover:bg-brown-200 transition-colors text-left"
-            >
-              <Lock className="w-[20px] h-[20px] text-brown-600 shrink-0" />
-              <span className="text-body-1 text-brown-600">Reset password</span>
-            </button>
-            <div className="border-t border-brown-300 my-[8px]"></div>
-            <button
-              onClick={handleLogout}
-              className="flex items-center gap-[12px] px-[12px] py-[12px] rounded-[8px] hover:bg-brown-200 transition-colors text-left"
-            >
-              <LogOut className="w-[20px] h-[20px] text-brown-600 shrink-0" />
-              <span className="text-body-1 text-brown-600">Log out</span>
-            </button>
+          {/* Menu Items - Using UserDropdownMenu component */}
+          <div className="flex flex-col px-[24px] py-[20px] md:px-[40px] md:py-[24px]">
+            <UserDropdownMenu
+              onProfileClick={handleProfileClick}
+              onResetPasswordClick={handleResetPasswordClick}
+              onLogoutClick={handleLogout}
+              className="bg-brown-100 border-brown-300"
+            />
           </div>
         </div>
       </div>

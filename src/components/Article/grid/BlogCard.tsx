@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { useAuth } from "../../../contexts/AuthContext";
 import authorLogo from "../../../assets/author-logo.svg";
 
 interface BlogCardProps {
@@ -15,6 +16,7 @@ interface BlogCardProps {
  * BlogCard component - Displays a single blog post card
  * Shows post image, category, title, description, author, and date
  * Includes hover effects and navigation to article detail page
+ * Uses member route if user is logged in
  */
 const BlogCard = ({
   id,
@@ -25,10 +27,13 @@ const BlogCard = ({
   author,
   date,
 }: BlogCardProps) => {
+  const { isAuthenticated } = useAuth();
+  const postUrl = isAuthenticated ? `/member/post/${id}` : `/post/${id}`;
+
   return (
     <article className="flex flex-col gap-[16px] w-full cursor-pointer transition-all duration-300 hover:scale-[1.02] hover:shadow-lg hover:shadow-brown-300/20 active:scale-100">
       <Link
-        to={`/post/${id}`}
+        to={postUrl}
         className="relative h-[212px] lg:h-[300px] xl:h-[360px] overflow-hidden rounded-[16px] group"
       >
         <img
@@ -42,7 +47,7 @@ const BlogCard = ({
           <span className="bg-brand-green-light rounded-[999px] px-[12px] py-[4px] text-body-2 text-brand-green transition-all duration-200 hover:bg-brand-green hover:text-white cursor-default">
             {category}
           </span>
-          <Link to={`/post/${id}`} className="w-full">
+          <Link to={postUrl} className="w-full">
             <h2 className="text-start text-headline-4 text-brown-600 hover:underline transition-all duration-200 hover:text-brown-700">
               {title}
             </h2>

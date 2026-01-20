@@ -1,6 +1,7 @@
 import "./App.css";
 import HomePage from "./pages/HomePage";
 import ArticleDetailPage from "./pages/ArticleDetailPage";
+import MemberArticleDetailPage from "./pages/MemberArticleDetailPage";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import NotFoundPage from "./pages/NotFoundPage";
 import { Toaster } from "sonner";
@@ -18,6 +19,7 @@ function App() {
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/post/:postId" element={<ArticleDetailPage />} />
+          <Route path="/member/post/:postId" element={<MemberArticleDetailPage />} />
           <Route path="/signup" element={<SignupPage />} /> 
           <Route path="/login" element={<LoginPage />} />
           <Route path="/registration-success" element={<RegistrationSuccessPage />} />

@@ -7,6 +7,7 @@ import twitterLogo from "../../../assets/twitter-logo.svg";
 
 interface ArticleLikeAndShareProps {
   article: BlogPost;
+  isLiked?: boolean;
   onLike: () => void;
   onCopyLink: () => void;
   onShare: (platform: string) => void;
@@ -18,6 +19,7 @@ interface ArticleLikeAndShareProps {
  */
 const ArticleLikeAndShare = ({
   article,
+  isLiked = false,
   onLike,
   onCopyLink,
   onShare,
@@ -28,10 +30,22 @@ const ArticleLikeAndShare = ({
       <button
         type="button"
         onClick={onLike}
-        className="flex items-center justify-center h-[48px] gap-[12px] bg-white rounded-[999px] pt-[12px] pb-[12px] pl-[40px] pr-[40px] hover:bg-brown-300 transition-colors"
+        className={`flex items-center justify-center h-[48px] gap-[12px] rounded-[999px] pt-[12px] pb-[12px] pl-[40px] pr-[40px] transition-colors ${
+          isLiked
+            ? "bg-brand-green hover:bg-brand-green/90"
+            : "bg-white hover:bg-brown-300"
+        }`}
       >
-        <Smile className="w-[24px] h-[24px] text-brown-600" />
-        <span className="text-body-1 text-brown-600 font-medium">
+        <Smile
+          className={`w-[24px] h-[24px] ${
+            isLiked ? "text-white" : "text-brown-600"
+          }`}
+        />
+        <span
+          className={`text-body-1 font-medium ${
+            isLiked ? "text-white" : "text-brown-600"
+          }`}
+        >
           {article.likes || 0}
         </span>
       </button>

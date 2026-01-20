@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import NavBar from "../components/layout/NavBar";
-import Footer from "../components/layout/Footer";
 import { useAuth } from "../contexts/AuthContext";
+import MemberNavBar from "../components/layout/MemberNavBar";
+import Footer from "../components/layout/Footer";
 import { fetchBlogPosts } from "../data/blogPosts";
 import { buildApiParams } from "../utils/blogUtils";
 import { DEFAULT_PAGE } from "../constants/pagination";
@@ -13,30 +13,51 @@ import ArticleContent from "../components/Article/detail/ArticleContent";
 import ArticleAuthorCard from "../components/Article/detail/ArticleAuthorCard";
 import ArticleLikeAndShare from "../components/Article/detail/ArticleLikeAndShare";
 import ArticleCommentSection from "../components/Article/detail/ArticleCommentSection";
-import LoginRequiredDialog from "../components/common/LoginRequiredDialog";
 import { copyLinkToClipboard } from "../utils/clipboardUtils";
 
 /**
- * ArticleDetailPage component - Displays full article content
- * Fetches article by ID from URL parameter
- * Searches through all pages if necessary to find the article
+ * MemberArticleDetailPage component - Displays full article content for logged-in users
+ * Always uses MemberNavBar (no conditional rendering to prevent flash)
+ * Requires authentication to access
  */
-const ArticleDetailPage = () => {
+const MemberArticleDetailPage = () => {
   const { postId } = useParams<{ postId: string }>();
   const navigate = useNavigate();
+  const { isAuthenticated, user } = useAuth();
   const [article, setArticle] = useState<BlogPost | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const [isLoginDialogOpen, setIsLoginDialogOpen] = useState<boolean>(false);
-  const { isAuthenticated } = useAuth();
-  const isLoggedIn = isAuthenticated;
+  const [likeCount, setLikeCount] = useState<number>(0);
+  const [isLiked, setIsLiked] = useState<boolean>(false);
 
-  // Redirect to member version if logged in
-  useEffect(() => {
-    if (isAuthenticated && postId) {
-      navigate(`/member/post/${postId}`, { replace: true });
+  // Helper function to get liked posts from localStorage
+  const getLikedPosts = (): Set<number> => {
+    if (!user?.email) return new Set();
+    try {
+      const likedPosts = localStorage.getItem(`liked_posts_${user.email}`);
+      return likedPosts ? new Set(JSON.parse(likedPosts)) : new Set();
+    } catch {
+      return new Set();
     }
-  }, [isAuthenticated, postId, navigate]);
+  };
+
+  // Helper function to save liked posts to localStorage
+  const saveLikedPosts = (likedPosts: Set<number>) => {
+    if (!user?.email) return;
+    try {
+      localStorage.setItem(`liked_posts_${user.email}`, JSON.stringify([...likedPosts]));
+    } catch (error) {
+      console.error("Error saving liked posts:", error);
+    }
+  };
+
+  useEffect(() => {
+    // Redirect to login if not authenticated
+    if (!isAuthenticated) {
+      navigate("/login", { replace: true });
+      return;
+    }
+  }, [isAuthenticated, navigate]);
 
   useEffect(() => {
     const loadArticle = async () => {
@@ -86,22 +107,32 @@ const ArticleDetailPage = () => {
 
         if (!foundArticle) {
           setError("Article not found");
-          setTimeout(() => navigate("/"), 2000);
+          setTimeout(() => navigate("/member"), 2000);
           return;
         }
 
         setArticle(foundArticle);
+        // Initialize like count from article
+        const initialLikeCount = foundArticle.likes || 0;
+        setLikeCount(initialLikeCount);
+
+        // Check if user has already liked this post
+        const likedPosts = getLikedPosts();
+        const userHasLiked = likedPosts.has(targetId);
+        setIsLiked(userHasLiked);
       } catch (err) {
         console.error("Error loading article:", err);
         setError("Failed to load article. Please try again later.");
-        setTimeout(() => navigate("/"), 2000);
+        setTimeout(() => navigate("/member"), 2000);
       } finally {
         setIsLoading(false);
       }
     };
 
-    loadArticle();
-  }, [postId, navigate]);
+    if (isAuthenticated) {
+      loadArticle();
+    }
+  }, [postId, navigate, isAuthenticated]);
 
   // Mock comments data
   const mockComments = [
@@ -134,6 +165,30 @@ const ArticleDetailPage = () => {
     await copyLinkToClipboard(currentUrl);
   };
 
+  // Function to handle like button click (toggle like/unlike - Facebook style)
+  const handleLike = () => {
+    if (!postId || !user?.email) return;
+
+    const targetId = parseInt(postId, 10);
+    const likedPosts = getLikedPosts();
+    const newIsLiked = !isLiked;
+
+    setIsLiked(newIsLiked);
+
+    if (newIsLiked) {
+      // User is liking the post: add to liked posts and increment count
+      likedPosts.add(targetId);
+      setLikeCount((prevCount) => prevCount + 1);
+    } else {
+      // User is unliking the post: remove from liked posts and decrement count
+      likedPosts.delete(targetId);
+      setLikeCount((prevCount) => Math.max(0, prevCount - 1));
+    }
+
+    // Save updated liked posts to localStorage
+    saveLikedPosts(likedPosts);
+  };
+
   // Function to share on social media
   const handleShare = (platform: string) => {
     const url = window.location.href;
@@ -157,15 +212,16 @@ const ArticleDetailPage = () => {
     window.open(shareUrl, "_blank", "width=600,height=400");
   };
 
-  const requireLogin = () => {
-    setIsLoginDialogOpen(true);
-  };
+  // Don't render if not authenticated (will redirect)
+  if (!isAuthenticated) {
+    return null;
+  }
 
   // If article not found or error, show message
   if (isLoading) {
     return (
       <div className="w-full min-h-screen font-family-poppins flex flex-col">
-        <NavBar />
+        <MemberNavBar />
         <div className="flex-1 flex justify-center items-center">
           <p className="text-body-1 text-brown-400">Loading...</p>
         </div>
@@ -177,7 +233,7 @@ const ArticleDetailPage = () => {
   if (error || !article) {
     return (
       <div className="w-full min-h-screen font-family-poppins flex flex-col">
-        <NavBar />
+        <MemberNavBar />
         <div className="flex-1 flex justify-center items-center">
           <p className="text-body-1 text-brand-red">
             {error || "Article not found"}
@@ -188,19 +244,9 @@ const ArticleDetailPage = () => {
     );
   }
 
-
-  // Don't render if authenticated (will redirect to member version)
-  if (isAuthenticated) {
-    return null;
-  }
-
   return (
     <div className="w-full min-h-screen font-family-poppins flex flex-col">
-      <NavBar />
-      <LoginRequiredDialog
-        open={isLoginDialogOpen}
-        onClose={() => setIsLoginDialogOpen(false)}
-      />
+      <MemberNavBar />
 
       <article className="w-full flex-1">
         {/* Back Button + Image */}
@@ -237,10 +283,9 @@ const ArticleDetailPage = () => {
                 <div className="hidden lg:block pb-[40px]">
                   <div className="bg-brown-200 rounded-[16px] p-[24px]">
                     <ArticleLikeAndShare
-                      article={article}
-                      onLike={() => {
-                        if (!isLoggedIn) return requireLogin();
-                      }}
+                      article={{ ...article, likes: likeCount }}
+                      isLiked={isLiked}
+                      onLike={handleLike}
                       onCopyLink={handleCopyLink}
                       onShare={handleShare}
                     />
@@ -253,8 +298,8 @@ const ArticleDetailPage = () => {
                 <div className="hidden lg:block pb-[60px]">
                   <ArticleCommentSection
                     comments={mockComments}
-                    disabled={!isLoggedIn}
-                    onRequireLogin={requireLogin}
+                    disabled={false}
+                    onRequireLogin={() => {}}
                   />
                 </div>
               </div>
@@ -275,10 +320,9 @@ const ArticleDetailPage = () => {
           <div className="px-[16px] py-[16px] md:px-[40px] md:py-[24px]">
             <div className="w-full max-w-[1200px] mx-auto">
               <ArticleLikeAndShare
-                article={article}
-                onLike={() => {
-                  if (!isLoggedIn) return requireLogin();
-                }}
+                article={{ ...article, likes: likeCount }}
+                isLiked={isLiked}
+                onLike={handleLike}
                 onCopyLink={handleCopyLink}
                 onShare={handleShare}
               />
@@ -293,8 +337,8 @@ const ArticleDetailPage = () => {
             <div className="w-full max-w-[800px] mx-auto">
               <ArticleCommentSection
                 comments={mockComments}
-                disabled={!isLoggedIn}
-                onRequireLogin={requireLogin}
+                disabled={false}
+                onRequireLogin={() => {}}
               />
             </div>
           </div>
@@ -306,4 +350,4 @@ const ArticleDetailPage = () => {
   );
 };
 
-export default ArticleDetailPage;
+export default MemberArticleDetailPage;
