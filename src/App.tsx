@@ -9,6 +9,8 @@ import SignupPage from "./pages/SignupPage";
 import LoginPage from "./pages/LoginPage";
 import RegistrationSuccessPage from "./pages/RegistrationSuccessPage";
 import MemberHomePage from "./pages/MemberHomePage";
+import ProfileManagePage from "./pages/ProfileManagePage";
+import ResetPasswordPage from "./pages/ResetPasswordPage";
 import { AuthProvider } from "./contexts/AuthContext";
 
 function App() {
@@ -24,6 +26,8 @@ function App() {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/registration-success" element={<RegistrationSuccessPage />} />
           <Route path="/member" element={<MemberHomePage />} />
+          <Route path="/member/profile" element={<ProfileManagePage />} />
+          <Route path="/member/reset-password" element={<ResetPasswordPage />} />
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </AuthProvider>

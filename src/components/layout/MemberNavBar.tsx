@@ -80,13 +80,13 @@ const MemberNavBar = () => {
   };
 
   const handleProfileClick = () => {
-    // TODO: Navigate to profile page
+    navigate("/member/profile");
     setIsMenuOpen(false);
     setIsDropdownOpen(false);
   };
 
   const handleResetPasswordClick = () => {
-    // TODO: Navigate to reset password page
+    navigate("/member/reset-password");
     setIsMenuOpen(false);
     setIsDropdownOpen(false);
   };
