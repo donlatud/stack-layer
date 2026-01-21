@@ -1,5 +1,5 @@
 import { useNavigate, useParams } from "react-router-dom";
-import { X, Trash2 } from "lucide-react";
+import { X } from "lucide-react";
 import BlackButton from "../../components/common/BlackButton";
 import { Button } from "../../components/ui/button";
 

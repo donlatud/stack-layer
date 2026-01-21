@@ -3,7 +3,6 @@ import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 import AdminLayout from "../../components/admin/AdminLayout";
 import BlackButton from "../../components/common/BlackButton";
-import { Button } from "../../components/ui/button";
 
 /**
  * CreateCategoryPage component - Create or edit category page for admin
