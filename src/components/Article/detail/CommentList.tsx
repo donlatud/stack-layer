@@ -11,6 +11,7 @@ interface CommentListProps {
   comments: Comment[];
 }
 
+/** รายการคอมเมนต์ทั้งหมด แสดง CommentItem และเส้นคั่นระหว่างรายการ */
 const CommentList = ({ comments }: CommentListProps) => {
   return (
     <div className="flex flex-col gap-[24px]">

@@ -1,15 +1,14 @@
-import * as React from "react"
-import { Button } from "@/components/ui/button"
-import { cn } from "@/lib/utils"
+import * as React from "react";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 interface BlackButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  children: React.ReactNode
+  children: React.ReactNode;
 }
 
 /**
- * BlackButton component - Reusable black/solid button
- * Extends Button component with custom styling
- * Includes hover and active state effects
+ * ปุ่มพื้นหลังสีเข้ม (น้ำตาล)
+ * ใช้กับ Button จาก ui; รองรับ className และ props ปุ่มอื่นๆ
  */
 const BlackButton = ({ children, className, ...props }: BlackButtonProps) => {
   return (

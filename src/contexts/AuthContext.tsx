@@ -17,11 +17,10 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+/** ใช้ user, isAuthenticated, login, logout, updateUser — ต้องอยู่ภายใต้ AuthProvider */
 export const useAuth = () => {
   const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error("useAuth must be used within an AuthProvider");
-  }
+  if (!context) throw new Error("useAuth must be used within an AuthProvider");
   return context;
 };
 
@@ -29,11 +28,11 @@ interface AuthProviderProps {
   children: ReactNode;
 }
 
+/** เก็บ user ใน state + localStorage; ส่ง login, logout, updateUser ลง context */
 export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [user, setUser] = useState<User | null>(() => {
-    // Check localStorage for persisted user
-    const savedUser = localStorage.getItem("user");
-    return savedUser ? JSON.parse(savedUser) : null;
+    const saved = localStorage.getItem("user");
+    return saved ? JSON.parse(saved) : null;
   });
 
   const login = (userData: User) => {

@@ -27,10 +27,14 @@ interface LoginFormProps {
   errorMessage?: string;
 }
 
+/** ข้อความ error เวลา login ไม่ผ่าน (รหัส/อีเมลผิด) */
+const DEFAULT_ERR_LOGIN = "Your password is incorrect or this email doesn't exist";
+/** ข้อความ error เวลาเกิดข้อผิดพลาดจากระบบ */
+const DEFAULT_ERR_GENERIC = "An error occurred. Please try again.";
+
 /**
- * LoginForm component - Reusable login form component
- * Can be used for both regular user login and admin login
- * Handles form state, validation, submission, and error display
+ * ฟอร์มล็อกอิน นำกลับใช้ได้ทั้ง member และ admin
+ * รองรับ: title, ข้อความปุ่ม, footer link, validation แบบกำหนดเอง, ข้อความ error กำหนดเอง
  */
 const LoginForm = ({
   onSubmit,
@@ -43,96 +47,59 @@ const LoginForm = ({
   validateForm: customValidateForm,
   errorMessage,
 }: LoginFormProps) => {
-  const [formData, setFormData] = useState<FormData>({
-    email: "",
-    password: "",
-  });
+  const [formData, setFormData] = useState<FormData>({ email: "", password: "" });
   const [errors, setErrors] = useState<FormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  /** validation เริ่มต้น: อีเมลต้องไม่ว่าง+ฟอร์แมตถูก, รหัสต้องไม่ว่าง */
   const defaultValidateForm = (data: FormData): FormErrors => {
-    const newErrors: FormErrors = {};
-
-    // Validate email
+    const e: FormErrors = {};
     if (!data.email.trim()) {
-      newErrors.email = "Email is required";
-    } else {
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(data.email)) {
-        newErrors.email = "Email must be a valid email";
-      }
+      e.email = "Email is required";
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)) {
+      e.email = "Email must be a valid email";
     }
-
-    // Validate password
-    if (!data.password) {
-      newErrors.password = "Password is required";
-    }
-
-    return newErrors;
+    if (!data.password) e.password = "Password is required";
+    return e;
   };
 
-  const validateForm = (): boolean => {
-    const validate = customValidateForm || defaultValidateForm;
-    const newErrors = validate(formData);
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+  /** รัน validation (ใช้ของ parent หรือ default) แล้วอัปเดต errors คืน true ถ้าไม่มี error */
+  const runValidation = (): boolean => {
+    const validate = customValidateForm ?? defaultValidateForm;
+    const next = validate(formData);
+    setErrors(next);
+    return Object.keys(next).length === 0;
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name]: value,
-    });
-    // Clear error when user starts typing
-    if (errors[name as keyof FormErrors]) {
-      setErrors({
-        ...errors,
-        [name]: undefined,
-      });
-    }
+    setFormData((prev) => ({ ...prev, [name]: value }));
+    setErrors((prev) => (prev[name as keyof FormErrors] ? { ...prev, [name]: undefined } : prev));
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    
-    // Validate all fields
-    if (!validateForm()) {
-      return;
-    }
+    if (!runValidation()) return;
 
     setIsSubmitting(true);
-
     try {
       const result = await onSubmit(formData);
-      
       if (result.success) {
-        // Success handling is done in parent component (navigation, etc.)
+        // จัดการ redirect ฯลฯ ใน parent
       } else {
-        // Show login error
-        const errorMsg = result.error || errorMessage || "Your password is incorrect or this email doesn't exist";
-        setErrors({
-          email: errorMsg,
-          password: errorMsg,
-        });
-        
-        // Show toast notification
-        toast.error(errorMsg, {
+        const msg = result.error ?? errorMessage ?? DEFAULT_ERR_LOGIN;
+        setErrors({ email: msg, password: msg });
+        toast.error(msg, {
           description: "Please try another password or email",
           duration: 5000,
           className: "toast-error-custom",
         });
       }
-    } catch (error) {
-      console.error("Login error:", error);
-      const errorMsg = errorMessage || "An error occurred. Please try again.";
-      setErrors({
-        email: errorMsg,
-        password: errorMsg,
-      });
-      
-      // Show toast notification
-      toast.error(errorMsg, {
+    } catch (err) {
+      console.error("Login error:", err);
+      const msg = errorMessage ?? DEFAULT_ERR_GENERIC;
+      setErrors({ email: msg, password: msg });
+      toast.error(msg, {
         description: "Please try again",
         duration: 5000,
         className: "toast-error-custom",

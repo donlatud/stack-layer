@@ -17,21 +17,21 @@ import LoginRequiredDialog from "../components/common/LoginRequiredDialog";
 import { copyLinkToClipboard } from "../utils/clipboardUtils";
 
 /**
- * ArticleDetailPage component - Displays full article content
- * Fetches article by ID from URL parameter
- * Searches through all pages if necessary to find the article
+ * หน้ารายละเอียดบทความ (path /post/:postId)
+ * ดึงบทความจาก ID; ถ้ายังไม่เจอจะข้ามไปหน้าถัดไปจนกว่าจะเจอหรือหมด
+ * ถ้าล็อกอินแล้วจะ redirect ไป /member/post/:postId
  */
 const ArticleDetailPage = () => {
   const { postId } = useParams<{ postId: string }>();
   const navigate = useNavigate();
   const [article, setArticle] = useState<BlogPost | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [isLoginDialogOpen, setIsLoginDialogOpen] = useState<boolean>(false);
+  const [isLoginDialogOpen, setIsLoginDialogOpen] = useState(false);
   const { isAuthenticated } = useAuth();
   const isLoggedIn = isAuthenticated;
 
-  // Redirect to member version if logged in
+  // ล็อกอินอยู่แล้ว → ไปหน้ารายละเอียดของ member แทน
   useEffect(() => {
     if (isAuthenticated && postId) {
       navigate(`/member/post/${postId}`, { replace: true });
@@ -128,13 +128,10 @@ const ArticleDetailPage = () => {
     },
   ];
 
-  // Function to copy article link to clipboard
   const handleCopyLink = async () => {
-    const currentUrl = window.location.href;
-    await copyLinkToClipboard(currentUrl);
+    await copyLinkToClipboard(window.location.href);
   };
 
-  // Function to share on social media
   const handleShare = (platform: string) => {
     const url = window.location.href;
     const encodedUrl = encodeURIComponent(url);

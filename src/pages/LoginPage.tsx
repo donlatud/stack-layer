@@ -4,8 +4,8 @@ import LoginForm from "../components/auth/LoginForm";
 import { login } from "../services/authService";
 
 /**
- * LoginPage component - User login page
- * Uses reusable LoginForm component
+ * หน้าเข้าสู่ระบบ (member)
+ * ใช้ LoginForm; ส่งต่อ auth service แล้วอัปเดต AuthContext และ redirect ไป /member
  */
 const LoginPage = () => {
   const navigate = useNavigate();
@@ -13,19 +13,12 @@ const LoginPage = () => {
 
   const handleSubmit = async (formData: { email: string; password: string }) => {
     const result = await login(formData);
-    
     if (result.success && result.user) {
-      // Set user in auth context
       authLogin(result.user);
-      // Navigate to member home page
       navigate("/member");
       return { success: true };
-    } else {
-      return { 
-        success: false, 
-        error: "Your password is incorrect or this email doesn't exist" 
-      };
     }
+    return { success: false, error: "Your password is incorrect or this email doesn't exist" };
   };
 
   return (

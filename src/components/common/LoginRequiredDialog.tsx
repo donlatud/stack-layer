@@ -6,14 +6,16 @@ interface LoginRequiredDialogProps {
 }
 
 /**
- * LoginRequiredDialog - Alert dialog shown when user isn't logged in
- * Shows a modal that asks user to create account / log in
+ * โมดัลแจ้งให้สมัครหรือเข้าสู่ระบบ
+ * ใช้เมื่อผู้ใช้ยังไม่ล็อกอินแล้วกระทำที่ต้องล็อกอิน
+ * ปุ่ม Create account / Log in ยังไม่เชื่อม navigator (รอเชื่อมในหน้า parent)
  */
 const LoginRequiredDialog = ({ open, onClose }: LoginRequiredDialogProps) => {
   if (!open) return null;
 
   return (
     <div className="fixed inset-0 z-50">
+      {/* พื้นหลังมืด กดแล้วปิด */}
       <button
         type="button"
         aria-label="Close dialog"
@@ -45,6 +47,7 @@ const LoginRequiredDialog = ({ open, onClose }: LoginRequiredDialogProps) => {
             continue
           </h2>
 
+          {/* TODO: เชื่อม onClick ไป /signup */}
           <button
             type="button"
             className="h-[48px] px-[40px] rounded-[999px] bg-black text-white text-body-1 font-medium hover:opacity-90 transition-opacity"
@@ -56,6 +59,7 @@ const LoginRequiredDialog = ({ open, onClose }: LoginRequiredDialogProps) => {
             <span className="text-body-1 text-brown-400">
               Already have an account?
             </span>
+            {/* TODO: เชื่อม onClick ไป /login */}
             <button
               type="button"
               className="underline text-brown-600 font-semibold hover:opacity-90 transition-opacity"

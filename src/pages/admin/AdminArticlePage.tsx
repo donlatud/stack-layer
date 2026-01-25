@@ -3,10 +3,13 @@ import { useNavigate } from "react-router-dom";
 import AdminLayout from "../../components/admin/AdminLayout";
 import { Plus, Search, Edit, Trash2, ChevronDown } from "lucide-react";
 import BlackButton from "../../components/common/BlackButton";
+import { cn } from "../../lib/utils";
 
 /**
- * AdminArticlePage component - Article management page for admin
- * Desktop-only page with table view of articles
+ * หน้าจัดการบทความ (Admin)
+ * - ตารางบทความ พร้อมค้นหา / กรอง Status, Category
+ * - ปุ่ม Create article → /admin/article/create
+ * - แก้ไข → /admin/article/:id/edit ลบ → /admin/article/:id/delete
  */
 const AdminArticlePage = () => {
   const navigate = useNavigate();
@@ -14,7 +17,7 @@ const AdminArticlePage = () => {
   const [statusFilter, setStatusFilter] = useState("all");
   const [categoryFilter, setCategoryFilter] = useState("all");
 
-  // TODO: Replace with actual data from API
+  // TODO: แทนที่ด้วยข้อมูลจาก API
   const articles = [
     {
       id: 1,
@@ -54,14 +57,15 @@ const AdminArticlePage = () => {
     },
   ];
 
+  // กรองบทความตามคำค้น, สถานะ และหมวดหมู่ (client-side จนกว่าจะมี API)
   const filteredArticles = articles.filter((article) => {
-    const matchesSearch = article.title.toLowerCase().includes(searchQuery.trim().toLowerCase());
-    const matchesStatus =
+    const q = searchQuery.trim().toLowerCase();
+    const matchSearch = !q || article.title.toLowerCase().includes(q);
+    const matchStatus =
       statusFilter === "all" || article.status.toLowerCase() === statusFilter.toLowerCase();
-    const matchesCategory =
+    const matchCategory =
       categoryFilter === "all" || article.category.toLowerCase() === categoryFilter.toLowerCase();
-
-    return matchesSearch && matchesStatus && matchesCategory;
+    return matchSearch && matchStatus && matchCategory;
   });
 
   return (
@@ -165,10 +169,12 @@ const AdminArticlePage = () => {
                   <td className="px-[24px] py-[16px] text-body-1 text-brown-600">{article.category}</td>
                   <td className="px-[24px] py-[16px]">
                     <span
-                      className={`inline-block px-[12px] py-[4px] rounded-full text-body-2 font-medium ${article.status === "Published"
-                        ? "bg-brand-green-light text-brand-green"
-                        : "bg-gray-100 text-gray-700"
-                        }`}
+                      className={cn(
+                        "inline-block px-[12px] py-[4px] rounded-full text-body-2 font-medium",
+                        article.status === "Published"
+                          ? "bg-brand-green-light text-brand-green"
+                          : "bg-gray-100 text-gray-700"
+                      )}
                     >
                       {article.status}
                     </span>

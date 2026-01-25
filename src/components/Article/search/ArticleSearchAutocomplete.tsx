@@ -9,11 +9,8 @@ interface ArticleSearchAutocompleteProps {
 }
 
 /**
- * ArticleSearchAutocomplete component - Dropdown list of search results
- * Displays filtered articles that match the search query
- * Navigates to article detail page when clicked
- * Limits results to 6 items for better UX
- * Uses member route if user is logged in
+ * ดรอปดาวน์ผลการค้นหา; แสดงสูงสุด 6 รายการ
+ * คลิกแล้วไป /post/:id หรือ /member/post/:id (ถ้าล็อกอิน) แล้ว onSelect (ปิด/ล้างค้นหา)
  */
 const ArticleSearchAutocomplete = ({
   posts,

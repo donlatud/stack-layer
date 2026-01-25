@@ -5,26 +5,31 @@ import AdminLayout from "../../components/admin/AdminLayout";
 import { Upload, X, Trash2 } from "lucide-react";
 import BlackButton from "../../components/common/BlackButton";
 import { Button } from "../../components/ui/button";
+import { cn } from "../../lib/utils";
+
+const MAX_INTRODUCTION_LENGTH = 120;
 
 /**
- * CreateArticlePage component - Create or edit article page for admin
- * Desktop-only page with form for article creation/editing
+ * หน้าสร้าง/แก้ไขบทความ (Admin)
+ * - Create: /admin/article/create
+ * - Edit: /admin/article/:articleId/edit
+ * - Thumbnail, หมวดหมู่, ชื่อผู้เขียน (read-only), หัวเรื่อง, บทนำ (max 120 ตัวอักษร), เนื้อหา
+ * - ปุ่ม Save as draft / Save and publish; โหมดแก้ไขมีปุ่ม Delete article
  */
 const CreateArticlePage = () => {
   const navigate = useNavigate();
   const { articleId } = useParams<{ articleId?: string }>();
   const isEditMode = !!articleId;
 
-  // Form state
   const [thumbnailImage, setThumbnailImage] = useState<File | null>(null);
   const [thumbnailPreview, setThumbnailPreview] = useState<string>("");
   const [category, setCategory] = useState("");
-  const [authorName] = useState("Thompson P."); // Pre-filled, read-only
+  const [authorName] = useState("Thompson P."); // คงที่ โหมดอ่านอย่างเดียว
   const [title, setTitle] = useState("");
   const [introduction, setIntroduction] = useState("");
   const [content, setContent] = useState("");
 
-  // Load article data if in edit mode
+  // โหลดข้อมูลบทความเมื่อเป็นโหมดแก้ไข
   useEffect(() => {
     if (articleId) {
       // TODO: Replace with actual API call
@@ -66,7 +71,7 @@ const CreateArticlePage = () => {
   };
 
   const handleSaveAsDraft = () => {
-    // TODO: Implement save as draft logic
+    // TODO: เรียก API บันทึกเป็น Draft
     console.log("Save as draft", {
       thumbnailImage,
       category,
@@ -76,19 +81,16 @@ const CreateArticlePage = () => {
       content,
       status: "draft",
     });
-    
-    // Show success toast notification
     toast.success("Create article and saved as draft", {
       description: "You can publish article later",
       duration: 2000,
       className: "toast-success-custom",
     });
-    
     navigate("/admin/article");
   };
 
   const handleSaveAndPublish = () => {
-    // TODO: Implement save and publish logic
+    // TODO: เรียก API บันทึกและเผยแพร่
     console.log("Save and publish", {
       thumbnailImage,
       category,
@@ -98,23 +100,17 @@ const CreateArticlePage = () => {
       content,
       status: "published",
     });
-    
-    // Show success toast notification
     toast.success("Create article and published", {
       description: "Your article has been successfully published",
       duration: 2000,
       className: "toast-success-custom",
     });
-    
     navigate("/admin/article");
   };
 
-  const handleDelete = () => {
-    navigate(`/admin/article/${articleId}/delete`);
-  };
+  const handleDelete = () => navigate(`/admin/article/${articleId}/delete`);
 
   const introductionLength = introduction.length;
-  const maxIntroductionLength = 120;
 
   return (
     <AdminLayout activeItem="article">
@@ -241,27 +237,28 @@ const CreateArticlePage = () => {
             />
           </section>
 
-          {/* Introduction */}
+          {/* Introduction — จำกัดไม่เกิน MAX_INTRODUCTION_LENGTH ตัวอักษร */}
           <section className="mb-[32px]">
             <div className="flex items-center justify-between mb-[12px]">
               <label htmlFor="introduction" className="block text-body-2 text-brown-600">
                 Introduction (max 120 letters)
               </label>
               <span
-                className={`text-body-3 ${
-                  introductionLength > maxIntroductionLength
+                className={cn(
+                  "text-body-3",
+                  introductionLength > MAX_INTRODUCTION_LENGTH
                     ? "text-brand-red"
                     : "text-gray-400"
-                }`}
+                )}
               >
-                {introductionLength}/{maxIntroductionLength}
+                {introductionLength}/{MAX_INTRODUCTION_LENGTH}
               </span>
             </div>
             <textarea
               id="introduction"
               value={introduction}
               onChange={(e) => {
-                if (e.target.value.length <= maxIntroductionLength) {
+                if (e.target.value.length <= MAX_INTRODUCTION_LENGTH) {
                   setIntroduction(e.target.value);
                 }
               }}

@@ -9,8 +9,8 @@ interface AuthFormCardProps {
 }
 
 /**
- * AuthFormCard component - Card container for authentication forms
- * Includes title, form content, and footer link
+ * การ์ดห่อฟอร์มหน้า Login/Signup
+ * มีหัวข้อ (ถ้าส่ง), ช่อง children เป็นฟอร์ม, และฟุตเตอร์ลิงก์ (เช่น "Already have an account? Log in")
  */
 const AuthFormCard = ({
   title,

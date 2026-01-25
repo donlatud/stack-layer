@@ -1,7 +1,5 @@
 /**
- * AuthorCard component - Author information card in hero section
- * Displays author name and bio
- * Responsive layout with different alignments for mobile/desktop
+ * การ์ดผู้เขียนใน Hero: ชื่อ Thompson P. และบทย่อ
  */
 const AuthorCard = () => {
   return (

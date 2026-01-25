@@ -5,8 +5,7 @@ interface ArticleMetaProps {
 }
 
 /**
- * ArticleMeta - Renders category, date, title, and description
- * Used in the main content area for all breakpoints
+ * เมตาดาต้าบทความ: หมวดหมู่, วันที่, หัวข้อ, คำอธิบาย
  */
 const ArticleMeta = ({ article }: ArticleMetaProps) => {
   return (

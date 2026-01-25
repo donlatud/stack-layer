@@ -16,9 +16,8 @@ import ArticleCommentSection from "../components/Article/detail/ArticleCommentSe
 import { copyLinkToClipboard } from "../utils/clipboardUtils";
 
 /**
- * MemberArticleDetailPage component - Displays full article content for logged-in users
- * Always uses MemberNavBar (no conditional rendering to prevent flash)
- * Requires authentication to access
+ * หน้ารายละเอียดบทความสำหรับสมาชิก (/member/post/:postId)
+ * ใช้ MemberNavBar; Like เก็บใน localStorage ตามอีเมล; ต้องล็อกอิน
  */
 const MemberArticleDetailPage = () => {
   const { postId } = useParams<{ postId: string }>();

@@ -2,10 +2,17 @@ import { useState } from "react";
 import { toast } from "sonner";
 import AdminLayout from "../../components/admin/AdminLayout";
 import BlackButton from "../../components/common/BlackButton";
+import { cn } from "../../lib/utils";
+
+/** คลาส input ใช้ร่วมกันในฟอร์มโปรไฟล์ (ความกว้าง โฟกัส ขอบ) */
+const PROFILE_INPUT_CLASS =
+  "w-[480px] max-w-full h-[44px] px-[16px] bg-white border border-gray-300 rounded-[8px] text-body-1 text-[#2D2D2D] focus:outline-none focus:ring-2 focus:ring-brand-red focus:border-brand-red";
+
+const MAX_BIO_LENGTH = 120;
 
 /**
- * AdminProfilePage component - Profile management page for admin
- * Desktop-only page with profile form
+ * หน้าโปรไฟล์ (Admin)
+ * แก้ไขชื่อ, username, อีเมล, Bio; อัปโหลดรูป; ปุ่ม Save
  */
 const AdminProfilePage = () => {
   const [formData, setFormData] = useState({
@@ -17,22 +24,14 @@ const AdminProfilePage = () => {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-
-    // Enforce max length for bio (120 letters)
-    if (name === "bio") {
-      if (value.length > 120) return;
-    }
-
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    // Bio จำกัดไม่เกิน MAX_BIO_LENGTH ตัวอักษร
+    if (name === "bio" && value.length > MAX_BIO_LENGTH) return;
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = () => {
-    // TODO: Implement save logic
+    // TODO: เรียก API บันทึกโปรไฟล์
     console.log("Saving profile:", formData);
-
     toast.success("Saved profile", {
       description: "Your profile has been successfully updated",
       duration: 2000,
@@ -41,7 +40,6 @@ const AdminProfilePage = () => {
   };
 
   const bioLength = formData.bio.length;
-  const maxBioLength = 120;
 
   return (
     <AdminLayout activeItem="profile">
@@ -91,7 +89,7 @@ const AdminProfilePage = () => {
                 name="name"
                 value={formData.name}
                 onChange={handleChange}
-                className="w-[480px] max-w-full h-[44px] px-[16px] bg-white border border-gray-300 rounded-[8px] text-body-1 text-[#2D2D2D] focus:outline-none focus:ring-2 focus:ring-brand-red focus:border-brand-red"
+                className={PROFILE_INPUT_CLASS}
               />
             </div>
 
@@ -105,7 +103,7 @@ const AdminProfilePage = () => {
                 name="username"
                 value={formData.username}
                 onChange={handleChange}
-                className="w-[480px] max-w-full h-[44px] px-[16px] bg-white border border-gray-300 rounded-[8px] text-body-1 text-[#2D2D2D] focus:outline-none focus:ring-2 focus:ring-brand-red focus:border-brand-red"
+                className={PROFILE_INPUT_CLASS}
               />
             </div>
 
@@ -119,7 +117,7 @@ const AdminProfilePage = () => {
                 name="email"
                 value={formData.email}
                 onChange={handleChange}
-                className="w-[480px] max-w-full h-[44px] px-[16px] bg-white border border-gray-300 rounded-[8px] text-body-1 text-[#2D2D2D] focus:outline-none focus:ring-2 focus:ring-brand-red focus:border-brand-red"
+                className={PROFILE_INPUT_CLASS}
               />
             </div>
 
@@ -129,9 +127,12 @@ const AdminProfilePage = () => {
                   Bio (max 120 letters)
                 </label>
                 <span
-                  className={`text-body-3 ${bioLength > maxBioLength ? "text-brand-red" : "text-gray-400"}`}
+                  className={cn(
+                    "text-body-3",
+                    bioLength > MAX_BIO_LENGTH ? "text-brand-red" : "text-gray-400"
+                  )}
                 >
-                  {bioLength}/{maxBioLength}
+                  {bioLength}/{MAX_BIO_LENGTH}
                 </span>
               </div>
               <textarea

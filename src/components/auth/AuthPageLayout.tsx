@@ -6,8 +6,8 @@ interface AuthPageLayoutProps {
 }
 
 /**
- * AuthPageLayout component - Common layout for authentication pages
- * Includes NavBar and centered main content area
+ * Layout หน้า Login / Signup
+ * แถบ NavBar ด้านบน, เนื้อหาฟอร์มอยู่กึ่งกลาง
  */
 const AuthPageLayout = ({ children }: AuthPageLayoutProps) => {
   return (

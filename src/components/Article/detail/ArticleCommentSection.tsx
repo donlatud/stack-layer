@@ -15,8 +15,8 @@ interface ArticleCommentSectionProps {
 }
 
 /**
- * ArticleCommentSection - Comment input and list
- * Styled as inner content component for flexible layout
+ * ส่วนคอมเมนต์: ช่องพิมพ์ + ปุ่ม Send, รายการคอมเมนต์
+ * disabled=true จะ trigger onRequireLogin เมื่อพยายามใส่หรือโฟกัส
  */
 const ArticleCommentSection = ({
   comments,

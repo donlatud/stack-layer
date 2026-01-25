@@ -6,18 +6,14 @@ import Footer from "../components/layout/Footer";
 import BlackButton from "../components/common/BlackButton";
 
 /**
- * NotFoundPage component - 404 error page
- * Displays error message with icon and navigation button
- * Uses MemberNavBar if logged in, NavBar if not logged in
+ * หน้า 404: ข้อความ PAGE NOT FOUND และปุ่มไปหน้าแรก
+ * ใช้ MemberNavBar หรือ NavBar ตามสถานะล็อกอิน
  */
 const NotFoundPage = () => {
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
 
-  const handleGoToHomepage = () => {
-    // If logged in, go to member homepage, otherwise go to public homepage
-    navigate(isAuthenticated ? "/member" : "/");
-  };
+  const handleGoToHomepage = () => navigate(isAuthenticated ? "/member" : "/");
 
   return (
     <div className="w-full min-h-screen font-family-poppins flex flex-col">
@@ -37,6 +33,7 @@ const NotFoundPage = () => {
           
           {/* Go To Homepage Button */}
           <BlackButton
+            type="button"
             onClick={handleGoToHomepage}
             className="mt-[8px] shadow-md shadow-brown-600/20"
           >

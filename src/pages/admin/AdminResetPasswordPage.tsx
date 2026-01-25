@@ -3,9 +3,14 @@ import { useNavigate } from "react-router-dom";
 import AdminLayout from "../../components/admin/AdminLayout";
 import BlackButton from "../../components/common/BlackButton";
 
+/** คลาส input รหัสผ่าน ใช้ร่วมกันในฟอร์ม Reset password */
+const PASSWORD_INPUT_CLASS =
+  "w-[480px] max-w-full h-[44px] px-[16px] bg-white border border-gray-300 rounded-[8px] text-body-1 text-[#2D2D2D] placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-red focus:border-brand-red";
+
 /**
- * AdminResetPasswordPage component - Reset password page for admin
- * Desktop-only page with password reset form
+ * หน้ารีเซ็ตรหัสผ่าน (Admin)
+ * ฟอร์ม: รหัสเก่า, รหัสใหม่, ยืนยันรหัสใหม่
+ * ปุ่ม "Reset password" → ไปหน้าโมดัลยืนยัน /admin/reset-password/check
  */
 const AdminResetPasswordPage = () => {
   const navigate = useNavigate();
@@ -17,14 +22,11 @@ const AdminResetPasswordPage = () => {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name]: value,
-    });
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = () => {
-    // In this UI flow, clicking the header button opens confirmation modal
+    // ไปหน้าโมดัลยืนยันก่อนรีเซ็ต
     navigate("/admin/reset-password/check");
   };
 
@@ -55,7 +57,7 @@ const AdminResetPasswordPage = () => {
                 value={formData.currentPassword}
                 onChange={handleChange}
                 placeholder="Current password"
-                className="w-[480px] max-w-full h-[44px] px-[16px] bg-white border border-gray-300 rounded-[8px] text-body-1 text-[#2D2D2D] placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-red focus:border-brand-red"
+                className={PASSWORD_INPUT_CLASS}
               />
             </div>
 
@@ -70,7 +72,7 @@ const AdminResetPasswordPage = () => {
                 value={formData.newPassword}
                 onChange={handleChange}
                 placeholder="New password"
-                className="w-[480px] max-w-full h-[44px] px-[16px] bg-white border border-gray-300 rounded-[8px] text-body-1 text-[#2D2D2D] placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-red focus:border-brand-red"
+                className={PASSWORD_INPUT_CLASS}
               />
             </div>
 
@@ -85,7 +87,7 @@ const AdminResetPasswordPage = () => {
                 value={formData.confirmPassword}
                 onChange={handleChange}
                 placeholder="Confirm new password"
-                className="w-[480px] max-w-full h-[44px] px-[16px] bg-white border border-gray-300 rounded-[8px] text-body-1 text-[#2D2D2D] placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-red focus:border-brand-red"
+                className={PASSWORD_INPUT_CLASS}
               />
             </div>
           </form>

@@ -6,9 +6,8 @@ import { User, Lock, X, CheckCircle } from "lucide-react";
 import BlackButton from "../components/common/BlackButton";
 
 /**
- * ProfileManagePage component - Profile management page for logged-in users
- * Mobile-responsive design with profile picture upload, name, username, and email fields
- * Includes segmented navigation to switch between Profile and Reset password
+ * หน้าโปรไฟล์สมาชิก: รูป, ชื่อ, username, อีเมล; แท็บสลับไป Reset password
+ * ต้องล็อกอิน; ยังไม่ล็อกอินจะ redirect ไป /login
  */
 const ProfileManagePage = () => {
   const { isAuthenticated, user, updateUser } = useAuth();

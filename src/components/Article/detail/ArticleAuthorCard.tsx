@@ -1,18 +1,15 @@
 import heroImage from "../../../assets/hero-image.png";
 
 /**
- * ArticleAuthorCard component - Author information card for article detail page
- * Displays author avatar, name, and bio with separator line
+ * การ์ดผู้เขียนในหน้ารายละเอียดบทความ: รูป, ชื่อ, บทย่อ
  */
 const ArticleAuthorCard = () => {
   return (
     <div className="w-full flex flex-col gap-[16px]">
-      {/* Author Header Section */}
       <div className="flex items-start gap-[16px]">
-        {/* Avatar */}
         <img
           src={heroImage}
-          alt="Thompson P."
+          alt="Thompson P. (author)"
           className="w-[44px] h-[44px] rounded-full object-cover shrink-0"
         />
 

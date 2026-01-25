@@ -4,8 +4,7 @@ import ArticleSection from "../components/Article/ArticleSection";
 import Footer from "../components/layout/Footer";
 
 /**
- * HomePage component - Main landing page
- * Composes NavBar, HeroSection, ArticleSection, and Footer
+ * หน้าแรก (ยังไม่ล็อกอิน): NavBar, Hero, รายการบทความ, Footer
  */
 const HomePage = () => {
   return (

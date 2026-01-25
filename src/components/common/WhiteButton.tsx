@@ -1,15 +1,14 @@
-import * as React from "react"
-import { Button } from "@/components/ui/button"
-import { cn } from "@/lib/utils"
+import * as React from "react";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 interface WhiteButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  children: React.ReactNode
+  children: React.ReactNode;
 }
 
 /**
- * WhiteButton component - Reusable white/outline button
- * Extends Button component with custom styling
- * Includes hover and active state effects
+ * ปุ่มแบบขอบ (outline) พื้นหลังขาว
+ * ใช้กับ Button variant="outline"; รองรับ className และ props ปุ่มอื่นๆ
  */
 const WhiteButton = ({ children, className, ...props }: WhiteButtonProps) => {
   return (

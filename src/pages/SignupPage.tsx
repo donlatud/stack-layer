@@ -14,9 +14,8 @@ interface FormErrors {
 }
 
 /**
- * SignupPage component - User registration page
- * Mobile-first design with form for name, username, email, and password
- * Includes validation and error handling
+ * หน้าสมัครสมาชิก: ชื่อ, username, อีเมล, รหัสผ่าน
+ * มี validation; ส่งต่อไป signup service แล้วไป /registration-success
  */
 const SignupPage = () => {
   const [formData, setFormData] = useState({
@@ -30,85 +29,46 @@ const SignupPage = () => {
   const navigate = useNavigate();
 
   const validateForm = (): boolean => {
-    const newErrors: FormErrors = {};
-
-    // Validate name
-    if (!formData.name.trim()) {
-      newErrors.name = "Name is required";
-    }
-
-    // Validate username
-    if (!formData.username.trim()) {
-      newErrors.username = "Username is required";
-    }
-
-    // Validate email
+    const e: FormErrors = {};
+    if (!formData.name.trim()) e.name = "Name is required";
+    if (!formData.username.trim()) e.username = "Username is required";
     if (!formData.email.trim()) {
-      newErrors.email = "Email is required";
-    } else {
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(formData.email)) {
-        newErrors.email = "Email must be a valid email";
-      }
+      e.email = "Email is required";
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      e.email = "Email must be a valid email";
     }
-
-    // Validate password
     if (!formData.password) {
-      newErrors.password = "Password is required";
+      e.password = "Password is required";
     } else if (formData.password.length < 6) {
-      newErrors.password = "Password must be at least 6 characters";
+      e.password = "Password must be at least 6 characters";
     }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    setErrors(e);
+    return Object.keys(e).length === 0;
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name]: value,
-    });
-    // Clear error when user starts typing
-    if (errors[name as keyof FormErrors]) {
-      setErrors({
-        ...errors,
-        [name]: undefined,
-      });
-    }
+    setFormData((prev) => ({ ...prev, [name]: value }));
+    setErrors((prev) => (prev[name as keyof FormErrors] ? { ...prev, [name]: undefined } : prev));
   };
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    
-    // Validate all fields
-    if (!validateForm()) {
-      return;
-    }
+  const handleSubmit = async (ev: React.FormEvent<HTMLFormElement>) => {
+    ev.preventDefault();
+    if (!validateForm()) return;
 
     setIsSubmitting(true);
-
     try {
       const result = await signup(formData);
-      
       if (result.success && result.user) {
-        // Navigate to success page with user data
         navigate("/registration-success", { state: { user: result.user } });
-      } else {
-        // Show email already taken error
-        if (result.message?.includes("already taken")) {
-          setErrors({
-            ...errors,
-            email: result.message,
-          });
-        }
+        return;
       }
-    } catch (error) {
-      console.error("Signup error:", error);
-      setErrors({
-        ...errors,
-        email: "An error occurred. Please try again.",
-      });
+      if (result.message?.includes("already taken")) {
+        setErrors((prev) => ({ ...prev, email: result.message }));
+      }
+    } catch (err) {
+      console.error("Signup error:", err);
+      setErrors((prev) => ({ ...prev, email: "An error occurred. Please try again." }));
     } finally {
       setIsSubmitting(false);
     }

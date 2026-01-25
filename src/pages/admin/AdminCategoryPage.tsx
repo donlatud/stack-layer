@@ -5,14 +5,15 @@ import { Plus, Search, Edit, Trash2 } from "lucide-react";
 import BlackButton from "../../components/common/BlackButton";
 
 /**
- * AdminCategoryPage component - Category management page for admin
- * Desktop-only page with list view of categories
+ * หน้าจัดการหมวดหมู่ (Admin)
+ * - รายการหมวดหมู่, ค้นหา, ปุ่มสร้าง/แก้ไข/ลบ
+ * - ช่องค้นหา: ยังไม่ได้เชื่อมการกรอง (รอ API)
  */
 const AdminCategoryPage = () => {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
 
-  // TODO: Replace with actual data from API
+  // TODO: แทนที่ด้วยข้อมูลจาก API
   const categories = [
     { id: 1, name: "Cat" },
     { id: 2, name: "General" },
@@ -36,11 +37,15 @@ const AdminCategoryPage = () => {
           </header>
         </div>
 
-        {/* Search */}
+        {/* ช่องค้นหา — การกรองตาม searchQuery ยังไม่ได้เชื่อมกับข้อมูล */}
         <div className="mt-[32px] mb-[24px]">
           <div className="relative max-w-[400px]">
+            <label htmlFor="admin-category-search" className="sr-only">
+              Search categories
+            </label>
             <Search className="absolute left-[16px] top-1/2 -translate-y-1/2 w-[20px] h-[20px] text-gray-400" />
             <input
+              id="admin-category-search"
               type="text"
               placeholder="search..."
               value={searchQuery}

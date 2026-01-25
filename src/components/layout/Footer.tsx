@@ -1,12 +1,11 @@
+import { useNavigate } from "react-router-dom";
 import linkedinLogo from "../../assets/linkedin-black-logo.svg";
 import githubLogo from "../../assets/github-logo.png";
 import googleIcon from "../../assets/google-logo.svg";
-import { useNavigate } from "react-router-dom";
 
 /**
- * Footer component - Site footer with social links and navigation
- * Displays "Get in touch" text, social media icons (LinkedIn, GitHub, Google)
- * Includes "Home page" button
+ * ฟุตเตอร์หลักของเว็บ
+ * ข้อความ "Get in touch", ไอคอน social (LinkedIn, GitHub, Google), ปุ่ม "Home page"
  */
 const Footer = () => {
   const navigate = useNavigate();
@@ -16,27 +15,29 @@ const Footer = () => {
         <div className="w-[98px] h-[24px] text-body-1 text-brown-500 lg:w-[98px] lg:h-[24px] transition-all duration-300 hover:text-brown-600 cursor-default">
           Get in touch
         </div>
-        <div className="w-[104px] h-[24px] flex items-center justify-center gap-[16px] lg:w-[104px] lg:h-[24px] ">
+        <div className="w-[104px] h-[24px] flex items-center justify-center gap-[16px] lg:w-[104px] lg:h-[24px]">
           <img
             src={linkedinLogo}
-            alt="linkedin icon"
+            alt="LinkedIn"
             className="w-[24px] h-[24px] cursor-pointer transition-all duration-300 hover:scale-125 active:scale-100 hover:opacity-90"
           />
           <img
             src={githubLogo}
-            alt="github icon"
+            alt="GitHub"
             className="w-[24px] h-[24px] cursor-pointer transition-all duration-300 hover:scale-125 active:scale-100 hover:opacity-90"
           />
           <img
             src={googleIcon}
-            alt="google icon"
+            alt="Google"
             className="w-[24px] h-[24px] cursor-pointer transition-all duration-300 hover:scale-125 active:scale-100 hover:opacity-90"
           />
         </div>
       </div>
       <button
+        type="button"
         onClick={() => navigate("/")}
-        className="w-[95px] h-[24px] rounded-[5px] text-body-1 text-brown-600 underline lg:w-[95px] lg:h-[24px] cursor-pointer transition-all duration-300 hover:text-brown-700 hover:scale-110 hover:font-semibold hover:underline-offset-4 active:scale-100">
+        className="w-[95px] h-[24px] rounded-[5px] text-body-1 text-brown-600 underline lg:w-[95px] lg:h-[24px] cursor-pointer transition-all duration-300 hover:text-brown-700 hover:scale-110 hover:font-semibold hover:underline-offset-4 active:scale-100"
+      >
         Home page
       </button>
     </div>

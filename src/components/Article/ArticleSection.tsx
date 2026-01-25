@@ -11,9 +11,9 @@ import { buildApiParams, filterPostsBySearch, checkHasMore } from "../../utils/b
 import type { BlogPost } from "../../types/blog";
 
 /**
- * ArticleSection component - Main container for article listing
- * Manages category filter and search query state
- * Fetches blog posts from API based on selected category and search query
+ * ส่วนหลักแสดงรายการบทความ (หน้าแรก / member)
+ * ค้นหาทำฝั่ง client; เปลี่ยนหมวดหมู่จะ fetch ใหม่ และรีเซ็ตหน้า
+ * โหลดเพิ่มผ่าน "View more" (เพิ่มหน้าไปเรื่อยๆ)
  */
 const ArticleSection = () => {
   const [selectedCategory, setSelectedCategory] = useState<string>(

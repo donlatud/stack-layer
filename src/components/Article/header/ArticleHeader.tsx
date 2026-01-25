@@ -1,6 +1,5 @@
 /**
- * ArticleHeader component - Section header for article listing
- * Displays "Latest articles" title with responsive typography
+ * หัวข้อส่วนรายการบทความ: "Latest articles"
  */
 const ArticleHeader = () => {
   return (

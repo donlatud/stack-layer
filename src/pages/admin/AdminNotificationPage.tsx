@@ -1,11 +1,11 @@
 import AdminLayout from "../../components/admin/AdminLayout";
 
 /**
- * AdminNotificationPage component - Notification page for admin
- * Desktop-only page with notification list
+ * หน้าการแจ้งเตือน (Admin)
+ * แสดงรายการ: someone commented/liked บนบทความ, เวลา, ปุ่ม View
  */
 const AdminNotificationPage = () => {
-  // TODO: Replace with actual data from API
+  // TODO: แทนที่ด้วยข้อมูลจาก API
   const notifications = [
     {
       id: 1,

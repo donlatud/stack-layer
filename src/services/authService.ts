@@ -1,4 +1,4 @@
-// import axios from "axios"; // TODO: Uncomment when implementing actual API calls
+// TODO: เปลี่ยนไปใช้ axios หรือ fetch จริงเมื่อมี API
 
 interface SignupData {
   name: string;
@@ -51,11 +51,7 @@ export const checkEmailExists = async (email: string): Promise<boolean> => {
   }
 };
 
-/**
- * Register a new user
- * @param data - User registration data
- * @returns Promise<SignupResponse>
- */
+/** สมัครสมาชิก; ตรวจอีเมลซ้ำก่อน (mock อยู่) */
 export const signup = async (data: SignupData): Promise<SignupResponse> => {
   try {
     // TODO: Replace with actual API endpoint
@@ -91,11 +87,7 @@ export const signup = async (data: SignupData): Promise<SignupResponse> => {
   }
 };
 
-/**
- * Login user
- * @param data - User login data
- * @returns Promise<LoginResponse>
- */
+/** ล็อกอิน; ตรวจกับ mock credentials (moodeng@gmail.com / 123456) */
 export const login = async (data: LoginData): Promise<LoginResponse> => {
   try {
     // TODO: Replace with actual API endpoint

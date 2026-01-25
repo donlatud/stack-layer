@@ -5,6 +5,7 @@ interface CommentItemProps {
   content: string;
 }
 
+/** รายการคอมเมนต์หนึ่งรายการ: รูป, ชื่อ, วันที่, เนื้อหา */
 const CommentItem = ({ avatar, name, date, content }: CommentItemProps) => {
   return (
     <div className="flex flex-col gap-[8px]">

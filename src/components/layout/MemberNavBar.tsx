@@ -5,11 +5,12 @@ import hhLogo from "../../assets/hh-logo.svg";
 import hamburgerMenu from "../../assets/hamburger-bar.svg";
 import { Bell, ChevronDown } from "lucide-react";
 import UserDropdownMenu from "./UserDropdownMenu";
+import { cn } from "@/lib/utils";
 
 /**
- * MemberNavBar component - Navigation bar for logged-in users
- * Shows user profile menu with Profile, Reset password, and Log out options
- * Mobile menu dropdowns from top when hamburger is clicked
+ * แถบนำทางสำหรับผู้ใช้ที่ล็อกอินแล้ว
+ * Logo, ไอคอนแจ้งเตือน, เมนูผู้ใช้ (Profile, Reset password, Log out)
+ * มือถือ: แฮมเบอร์เกอร์เปิดเมนูเลื่อนลงจากด้านบน
  */
 const MemberNavBar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -94,8 +95,10 @@ const MemberNavBar = () => {
   return (
     <>
       <nav
-        className={`sticky top-0 z-50 w-full h-[48px] border-b border-brown-300 flex justify-between items-center pt-[12px] pr-[24px] pb-[12px] pl-[24px] bg-brown-100 backdrop-blur-sm transition-shadow duration-300 md:h-[56px] md:pt-[13px] md:pr-[40px] md:pb-[13px] md:pl-[40px] lg:h-[80px] lg:pt-[14px] lg:pr-[80px] lg:pb-[14px] lg:pl-[80px] xl:h-[80px] xl:pt-[16px] xl:pr-[120px] xl:pb-[16px] xl:pl-[120px] ${isScrolled ? "shadow-md shadow-brown-300/20" : ""
-          }`}
+        className={cn(
+          "sticky top-0 z-50 w-full h-[48px] border-b border-brown-300 flex justify-between items-center pt-[12px] pr-[24px] pb-[12px] pl-[24px] bg-brown-100 backdrop-blur-sm transition-shadow duration-300 md:h-[56px] md:pt-[13px] md:pr-[40px] md:pb-[13px] md:pl-[40px] lg:h-[80px] lg:pt-[14px] lg:pr-[80px] lg:pb-[14px] lg:pl-[80px] xl:h-[80px] xl:pt-[16px] xl:pr-[120px] xl:pb-[16px] xl:pl-[120px]",
+          isScrolled && "shadow-md shadow-brown-300/20"
+        )}
       >
         {/* Logo - Mobile and Tablet */}
         <img
@@ -154,8 +157,10 @@ const MemberNavBar = () => {
                 </span>
                 {/* Dropdown Arrow */}
                 <ChevronDown
-                  className={`w-[16px] h-[16px] text-brown-600 transition-transform ${isDropdownOpen ? "rotate-180" : ""
-                    }`}
+                  className={cn(
+                    "w-[16px] h-[16px] text-brown-600 transition-transform",
+                    isDropdownOpen && "rotate-180"
+                  )}
                 />
               </button>
 
@@ -193,12 +198,11 @@ const MemberNavBar = () => {
         />
       )}
 
-      {/* Mobile/Tablet menu - dropdown from top */}
       <div
-        className={`member-menu fixed top-[48px] md:top-[56px] left-0 right-0 z-40 bg-brown-100 border-b border-brown-300 shadow-lg shadow-brown-300/30 lg:hidden transition-all duration-300 ease-in-out ${isMenuOpen
-            ? "opacity-100 translate-y-0"
-            : "opacity-0 -translate-y-full pointer-events-none"
-          }`}
+        className={cn(
+          "member-menu fixed top-[48px] md:top-[56px] left-0 right-0 z-40 bg-brown-100 border-b border-brown-300 shadow-lg shadow-brown-300/30 lg:hidden transition-all duration-300 ease-in-out",
+          isMenuOpen ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-full pointer-events-none"
+        )}
       >
         <div className="flex flex-col">
           {/* User Profile Section - Mobile/Tablet */}

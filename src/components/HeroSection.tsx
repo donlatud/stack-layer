@@ -1,11 +1,10 @@
-import {HeroContent} from "./Hero/HeroContent";
+import { HeroContent } from "./Hero/HeroContent";
 import HeroImage from "./Hero/HeroImage";
 import AuthorCard from "./Hero/AuthorCard";
 
 /**
- * HeroSection component - Hero section of the landing page
- * Displays hero content, image, and author card
- * Responsive layout: stacked on mobile, row on desktop
+ * เซกชัน Hero หน้าแรก: ข้อความ Hero, รูป, การ์ดผู้เขียน
+ * มือถือเรียงแนวตั้ง; เดสก์ท็อปเป็นแถว
  */
 const HeroSection = () => {
   return (

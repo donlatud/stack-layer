@@ -5,8 +5,10 @@ import AdminLayout from "../../components/admin/AdminLayout";
 import BlackButton from "../../components/common/BlackButton";
 
 /**
- * CreateCategoryPage component - Create or edit category page for admin
- * Reused for both create and edit flows
+ * หน้าสร้าง/แก้ไขหมวดหมู่ (Admin)
+ * - Create: /admin/category/create
+ * - Edit: /admin/category/:categoryId/edit
+ * - ฟิลด์เดียว: ชื่อหมวดหมู่; ปุ่ม Save
  */
 const CreateCategoryPage = () => {
   const navigate = useNavigate();
@@ -15,36 +17,29 @@ const CreateCategoryPage = () => {
 
   const [categoryName, setCategoryName] = useState("");
 
-  // Load category data in edit mode (mock for now)
+  // โหลดชื่อหมวดหมู่เมื่อเป็นโหมดแก้ไข (mock; TODO: เปลี่ยนเป็น API)
   useEffect(() => {
     if (categoryId) {
-      // TODO: Replace with actual API call
       const mockCategoryName = "Cat";
       setCategoryName(mockCategoryName);
     }
   }, [categoryId]);
 
   const handleSave = () => {
-    // TODO: Implement save logic (create or update)
+    // TODO: เรียก API สร้างหรืออัปเดตหมวดหมู่
     console.log(isEditMode ? "Update category" : "Create category", {
       categoryId,
       categoryName,
     });
-
-    if (isEditMode) {
-      toast.success("Update category", {
-        description: "Category has been successfully updated.",
-        duration: 2000,
-        className: "toast-success-custom",
-      });
-    } else {
-      toast.success("Create category", {
-        description: "Category has been successfully created.",
-        duration: 2000,
-        className: "toast-success-custom",
-      });
-    }
-
+    const title = isEditMode ? "Update category" : "Create category";
+    const description = isEditMode
+      ? "Category has been successfully updated."
+      : "Category has been successfully created.";
+    toast.success(title, {
+      description,
+      duration: 2000,
+      className: "toast-success-custom",
+    });
     navigate("/admin/category");
   };
 

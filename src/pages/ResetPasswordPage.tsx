@@ -6,9 +6,8 @@ import { User, Lock, X } from "lucide-react";
 import BlackButton from "../components/common/BlackButton";
 
 /**
- * ResetPasswordPage component - Password reset page for logged-in users
- * Mobile-responsive design with current password, new password, and confirm password fields
- * Includes segmented navigation to switch between Profile and Reset password
+ * หน้ารีเซ็ตรหัสผ่านสมาชิก: รหัสเดิม, รหัสใหม่, ยืนยันรหัส; แท็บสลับไป Profile
+ * ต้องล็อกอิน
  */
 const ResetPasswordPage = () => {
   const { isAuthenticated, user } = useAuth();
