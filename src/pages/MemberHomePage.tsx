@@ -8,14 +8,14 @@ import Footer from "../components/layout/Footer";
 
 /**
  * หน้าแรกสมาชิก (ล็อกอินแล้ว): MemberNavBar, Hero, รายการบทความ, Footer
- * ยังไม่ล็อกอินจะ redirect ไป /login
+ * ยังไม่ล็อกอินจะ redirect ไป / (หน้าแรก)
  */
 const MemberHomePage = () => {
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!isAuthenticated) navigate("/login");
+    if (!isAuthenticated) navigate("/");
   }, [isAuthenticated, navigate]);
 
   if (!isAuthenticated) return null;

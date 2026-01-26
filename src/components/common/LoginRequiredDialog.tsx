@@ -3,14 +3,23 @@ import { X } from "lucide-react";
 interface LoginRequiredDialogProps {
   open: boolean;
   onClose: () => void;
+  /** เมื่อกด "Create account" (ส่งจาก parent เช่น navigate ไป /signup แล้วปิดโมดัล) */
+  onCreateAccountClick?: () => void;
+  /** เมื่อกด "Log in" (ส่งจาก parent เช่น navigate ไป /login แล้วปิดโมดัล) */
+  onLoginClick?: () => void;
 }
 
 /**
  * โมดัลแจ้งให้สมัครหรือเข้าสู่ระบบ
  * ใช้เมื่อผู้ใช้ยังไม่ล็อกอินแล้วกระทำที่ต้องล็อกอิน
- * ปุ่ม Create account / Log in ยังไม่เชื่อม navigator (รอเชื่อมในหน้า parent)
+ * ส่ง onCreateAccountClick / onLoginClick เพื่อไปหน้าสมัครหรือล็อกอิน
  */
-const LoginRequiredDialog = ({ open, onClose }: LoginRequiredDialogProps) => {
+const LoginRequiredDialog = ({
+  open,
+  onClose,
+  onCreateAccountClick,
+  onLoginClick,
+}: LoginRequiredDialogProps) => {
   if (!open) return null;
 
   return (
@@ -47,9 +56,9 @@ const LoginRequiredDialog = ({ open, onClose }: LoginRequiredDialogProps) => {
             continue
           </h2>
 
-          {/* TODO: เชื่อม onClick ไป /signup */}
           <button
             type="button"
+            onClick={onCreateAccountClick}
             className="h-[48px] px-[40px] rounded-[999px] bg-black text-white text-body-1 font-medium hover:opacity-90 transition-opacity"
           >
             Create account
@@ -59,9 +68,9 @@ const LoginRequiredDialog = ({ open, onClose }: LoginRequiredDialogProps) => {
             <span className="text-body-1 text-brown-400">
               Already have an account?
             </span>
-            {/* TODO: เชื่อม onClick ไป /login */}
             <button
               type="button"
+              onClick={onLoginClick}
               className="underline text-brown-600 font-semibold hover:opacity-90 transition-opacity"
             >
               Log in

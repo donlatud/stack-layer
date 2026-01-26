@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import AdminLayout from "../../components/admin/AdminLayout";
 import BlackButton from "../../components/common/BlackButton";
+import PasswordInput from "../../components/common/PasswordInput";
 
 /** คลาส input รหัสผ่าน ใช้ร่วมกันในฟอร์ม Reset password */
 const PASSWORD_INPUT_CLASS =
@@ -50,14 +51,14 @@ const AdminResetPasswordPage = () => {
               <label htmlFor="currentPassword" className="text-body-2 text-gray-600">
                 Current password
               </label>
-              <input
-                type="password"
+              <PasswordInput
                 id="currentPassword"
                 name="currentPassword"
                 value={formData.currentPassword}
                 onChange={handleChange}
                 placeholder="Current password"
                 className={PASSWORD_INPUT_CLASS}
+                fullWidth={false}
               />
             </div>
 
@@ -65,14 +66,14 @@ const AdminResetPasswordPage = () => {
               <label htmlFor="newPassword" className="text-body-2 text-gray-600">
                 New password
               </label>
-              <input
-                type="password"
+              <PasswordInput
                 id="newPassword"
                 name="newPassword"
                 value={formData.newPassword}
                 onChange={handleChange}
                 placeholder="New password"
                 className={PASSWORD_INPUT_CLASS}
+                fullWidth={false}
               />
             </div>
 
@@ -80,14 +81,14 @@ const AdminResetPasswordPage = () => {
               <label htmlFor="confirmPassword" className="text-body-2 text-gray-600">
                 Confirm new password
               </label>
-              <input
-                type="password"
+              <PasswordInput
                 id="confirmPassword"
                 name="confirmPassword"
                 value={formData.confirmPassword}
                 onChange={handleChange}
                 placeholder="Confirm new password"
                 className={PASSWORD_INPUT_CLASS}
+                fullWidth={false}
               />
             </div>
           </form>

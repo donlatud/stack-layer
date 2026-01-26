@@ -18,11 +18,15 @@ interface FormErrors {
 interface LoginFormProps {
   onSubmit: (formData: FormData) => Promise<{ success: boolean; error?: string }>;
   title?: string;
+  /** ข้อความเล็กเหนือ title (เช่น "Admin panel") */
+  subtitle?: string;
   buttonText?: string;
   submittingText?: string;
   footerText?: string;
   footerLinkText?: string;
   onFooterLinkClick?: () => void;
+  /** false = ไม่แสดง NavBar (ใช้กับ Admin login) */
+  showNav?: boolean;
   validateForm?: (formData: FormData) => FormErrors;
   errorMessage?: string;
 }
@@ -39,11 +43,13 @@ const DEFAULT_ERR_GENERIC = "An error occurred. Please try again.";
 const LoginForm = ({
   onSubmit,
   title = "Log in",
+  subtitle,
   buttonText = "Log in",
   submittingText = "Logging in...",
   footerText,
   footerLinkText,
   onFooterLinkClick,
+  showNav = true,
   validateForm: customValidateForm,
   errorMessage,
 }: LoginFormProps) => {
@@ -110,9 +116,10 @@ const LoginForm = ({
   };
 
   return (
-    <AuthPageLayout>
+    <AuthPageLayout showNav={showNav}>
       <AuthFormCard
         title={title}
+        subtitle={subtitle}
         footerText={footerText}
         footerLinkText={footerLinkText}
         onFooterLinkClick={onFooterLinkClick}

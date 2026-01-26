@@ -8,7 +8,7 @@ import MemberArticleDetailPage from "./pages/MemberArticleDetailPage";
 import NotFoundPage from "./pages/NotFoundPage";
 import SignupPage from "./pages/SignupPage";
 import LoginPage from "./pages/LoginPage";
-import AdminLoginPage from "./pages/AdminLoginPage";
+import AdminLoginPage from "./pages/admin/AdminLoginPage";
 import AdminArticlePage from "./pages/admin/AdminArticlePage";
 import CreateArticlePage from "./pages/admin/CreateArticlePage";
 import CheckDeleteArticlePage from "./pages/admin/CheckDeleteArticlePage";

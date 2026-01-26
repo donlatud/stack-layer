@@ -51,9 +51,9 @@ const MemberArticleDetailPage = () => {
   };
 
   useEffect(() => {
-    // Redirect to login if not authenticated
+    // Redirect to home page if not authenticated
     if (!isAuthenticated) {
-      navigate("/login", { replace: true });
+      navigate("/", { replace: true });
       return;
     }
   }, [isAuthenticated, navigate]);

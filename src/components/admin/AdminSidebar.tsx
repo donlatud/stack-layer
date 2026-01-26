@@ -89,7 +89,7 @@ const AdminSidebar = ({ activeItem }: AdminSidebarProps) => {
           <li>
             <button
               type="button"
-              onClick={() => navigate("/admin/login")}
+              onClick={() => navigate("/")}
               className={cn(NAV_BUTTON_BASE, "text-brown-400 hover:bg-brown-100")}
             >
               <LogOut className="w-[20px] h-[20px] shrink-0" />

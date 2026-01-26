@@ -4,6 +4,7 @@ import { useAuth } from "../contexts/AuthContext";
 import MemberNavBar from "../components/layout/MemberNavBar";
 import { User, Lock, X } from "lucide-react";
 import BlackButton from "../components/common/BlackButton";
+import PasswordInput from "../components/common/PasswordInput";
 
 /**
  * หน้ารีเซ็ตรหัสผ่านสมาชิก: รหัสเดิม, รหัสใหม่, ยืนยันรหัส; แท็บสลับไป Profile
@@ -167,17 +168,16 @@ const ResetPasswordPage = () => {
                 <label htmlFor="currentPassword" className="text-body-1 text-brown-400">
                   Current password
                 </label>
-                <input
-                  type="password"
+                <PasswordInput
                   id="currentPassword"
                   name="currentPassword"
                   value={formData.currentPassword}
                   onChange={handleChange}
-                  className={`w-full h-[48px] px-[16px] py-[12px] bg-white border rounded-[8px] text-body-1 text-brown-500 placeholder:text-brown-500 focus:outline-none focus:ring-2 ${errors.currentPassword
-                      ? "border-brand-red text-brand-red focus:ring-brand-red focus:border-brand-red"
-                      : "border-brown-300 focus:ring-brown-400 focus:border-brown-400"
-                    }`}
                   placeholder="Current password"
+                  className={`w-full h-[48px] px-[16px] py-[12px] bg-white border rounded-[8px] text-body-1 text-brown-500 placeholder:text-brown-500 focus:outline-none focus:ring-2 ${errors.currentPassword
+                    ? "border-brand-red text-brand-red focus:ring-brand-red focus:border-brand-red"
+                    : "border-brown-300 focus:ring-brown-400 focus:border-brown-400"
+                  }`}
                 />
                 {errors.currentPassword && (
                   <p className="text-body-2 text-brand-red mt-[4px]">
@@ -191,17 +191,16 @@ const ResetPasswordPage = () => {
                 <label htmlFor="newPassword" className="text-body-1 text-brown-400">
                   New password
                 </label>
-                <input
-                  type="password"
+                <PasswordInput
                   id="newPassword"
                   name="newPassword"
                   value={formData.newPassword}
                   onChange={handleChange}
-                  className={`w-full h-[48px] px-[16px] py-[12px] bg-white border rounded-[8px] text-body-1 text-brown-500 placeholder:text-brown-500 focus:outline-none focus:ring-2 ${errors.newPassword
-                      ? "border-brand-red text-brand-red focus:ring-brand-red focus:border-brand-red"
-                      : "border-brown-300 focus:ring-brown-400 focus:border-brown-400"
-                    }`}
                   placeholder="New password"
+                  className={`w-full h-[48px] px-[16px] py-[12px] bg-white border rounded-[8px] text-body-1 text-brown-500 placeholder:text-brown-500 focus:outline-none focus:ring-2 ${errors.newPassword
+                    ? "border-brand-red text-brand-red focus:ring-brand-red focus:border-brand-red"
+                    : "border-brown-300 focus:ring-brown-400 focus:border-brown-400"
+                  }`}
                 />
                 {errors.newPassword && (
                   <p className="text-body-2 text-brand-red mt-[4px]">
@@ -215,17 +214,16 @@ const ResetPasswordPage = () => {
                 <label htmlFor="confirmPassword" className="text-body-1 text-brown-400">
                   Confirm new password
                 </label>
-                <input
-                  type="password"
+                <PasswordInput
                   id="confirmPassword"
                   name="confirmPassword"
                   value={formData.confirmPassword}
                   onChange={handleChange}
-                  className={`w-full h-[48px] px-[16px] py-[12px] bg-white border rounded-[8px] text-body-1 text-brown-500 placeholder:text-brown-500 focus:outline-none focus:ring-2 ${errors.confirmPassword
-                      ? "border-brand-red text-brand-red focus:ring-brand-red focus:border-brand-red"
-                      : "border-brown-300 focus:ring-brown-400 focus:border-brown-400"
-                    }`}
                   placeholder="Confirm new password"
+                  className={`w-full h-[48px] px-[16px] py-[12px] bg-white border rounded-[8px] text-body-1 text-brown-500 placeholder:text-brown-500 focus:outline-none focus:ring-2 ${errors.confirmPassword
+                    ? "border-brand-red text-brand-red focus:ring-brand-red focus:border-brand-red"
+                    : "border-brown-300 focus:ring-brown-400 focus:border-brown-400"
+                  }`}
                 />
                 {errors.confirmPassword && (
                   <p className="text-body-2 text-brand-red mt-[4px]">
@@ -303,17 +301,16 @@ const ResetPasswordPage = () => {
                       <label htmlFor="currentPassword-desktop" className="text-body-2 text-brown-400">
                         Current password
                       </label>
-                      <input
-                        type="password"
+                      <PasswordInput
                         id="currentPassword-desktop"
                         name="currentPassword"
                         value={formData.currentPassword}
                         onChange={handleChange}
-                        className={`w-full h-[44px] px-[16px] py-[12px] bg-white border rounded-[8px] text-body-1 text-brown-500 placeholder:text-brown-500 focus:outline-none focus:ring-2 ${errors.currentPassword
-                            ? "border-brand-red text-brand-red focus:ring-brand-red focus:border-brand-red"
-                            : "border-brown-300 focus:ring-brown-400 focus:border-brown-400"
-                          }`}
                         placeholder="Current password"
+                        className={`w-full h-[44px] px-[16px] py-[12px] bg-white border rounded-[8px] text-body-1 text-brown-500 placeholder:text-brown-500 focus:outline-none focus:ring-2 ${errors.currentPassword
+                          ? "border-brand-red text-brand-red focus:ring-brand-red focus:border-brand-red"
+                          : "border-brown-300 focus:ring-brown-400 focus:border-brown-400"
+                        }`}
                       />
                       {errors.currentPassword && (
                         <p className="text-body-2 text-brand-red mt-[4px]">
@@ -327,17 +324,16 @@ const ResetPasswordPage = () => {
                       <label htmlFor="newPassword-desktop" className="text-body-2 text-brown-400">
                         New password
                       </label>
-                      <input
-                        type="password"
+                      <PasswordInput
                         id="newPassword-desktop"
                         name="newPassword"
                         value={formData.newPassword}
                         onChange={handleChange}
-                        className={`w-full h-[44px] px-[16px] py-[12px] bg-white border rounded-[8px] text-body-1 text-brown-500 placeholder:text-brown-500 focus:outline-none focus:ring-2 ${errors.newPassword
-                            ? "border-brand-red text-brand-red focus:ring-brand-red focus:border-brand-red"
-                            : "border-brown-300 focus:ring-brown-400 focus:border-brown-400"
-                          }`}
                         placeholder="New password"
+                        className={`w-full h-[44px] px-[16px] py-[12px] bg-white border rounded-[8px] text-body-1 text-brown-500 placeholder:text-brown-500 focus:outline-none focus:ring-2 ${errors.newPassword
+                          ? "border-brand-red text-brand-red focus:ring-brand-red focus:border-brand-red"
+                          : "border-brown-300 focus:ring-brown-400 focus:border-brown-400"
+                        }`}
                       />
                       {errors.newPassword && (
                         <p className="text-body-2 text-brand-red mt-[4px]">
@@ -351,17 +347,16 @@ const ResetPasswordPage = () => {
                       <label htmlFor="confirmPassword-desktop" className="text-body-2 text-brown-400">
                         Confirm new password
                       </label>
-                      <input
-                        type="password"
+                      <PasswordInput
                         id="confirmPassword-desktop"
                         name="confirmPassword"
                         value={formData.confirmPassword}
                         onChange={handleChange}
-                        className={`w-full h-[44px] px-[16px] py-[12px] bg-white border rounded-[8px] text-body-1 text-brown-500 placeholder:text-brown-500 focus:outline-none focus:ring-2 ${errors.confirmPassword
-                            ? "border-brand-red text-brand-red focus:ring-brand-red focus:border-brand-red"
-                            : "border-brown-300 focus:ring-brown-400 focus:border-brown-400"
-                          }`}
                         placeholder="Confirm new password"
+                        className={`w-full h-[44px] px-[16px] py-[12px] bg-white border rounded-[8px] text-body-1 text-brown-500 placeholder:text-brown-500 focus:outline-none focus:ring-2 ${errors.confirmPassword
+                          ? "border-brand-red text-brand-red focus:ring-brand-red focus:border-brand-red"
+                          : "border-brown-300 focus:ring-brown-400 focus:border-brown-400"
+                        }`}
                       />
                       {errors.confirmPassword && (
                         <p className="text-body-2 text-brand-red mt-[4px]">

@@ -1,12 +1,14 @@
-import LoginForm from "../components/auth/LoginForm";
+import LoginForm from "../../components/auth/LoginForm";
 
 /**
- * หน้าเข้าสู่ระบบแอดมิน
+ * หน้าเข้าสู่ระบบแอดมิน (ไม่มี NavBar)
+ * การ์ดกลางจอ: "Admin panel", "Log in", Email, Password, ปุ่ม Log in
  * ใช้ LoginForm; logic ล็อกอินแอดมินยังเป็น placeholder (TODO: เปลี่ยนเป็น admin service)
+ * เมื่อข้อมูลผิด → toast แจ้งเตือน (ใน LoginForm)
  */
 const AdminLoginPage = () => {
   const handleSubmit = async (_formData: { email: string; password: string }) => {
-    // TODO: เรียก adminLogin จาก services เมื่อมี
+    // TODO: เรียก adminLogin จาก services เมื่อมี; success แล้ว navigate("/admin/article")
     console.log("Admin login attempt:", _formData);
     return { success: false, error: "Your password is incorrect or this email doesn't exist" };
   };
@@ -14,11 +16,9 @@ const AdminLoginPage = () => {
   return (
     <LoginForm
       onSubmit={handleSubmit}
+      subtitle="Admin panel"
       title="Log in"
-      // Admin page might not need footer link, or could link to regular login
-      // footerText="Are you a regular user?"
-      // footerLinkText="Log in here"
-      // onFooterLinkClick={() => navigate("/login")}
+      showNav={false}
     />
   );
 };

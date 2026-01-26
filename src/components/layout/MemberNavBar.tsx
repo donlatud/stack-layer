@@ -74,8 +74,8 @@ const MemberNavBar = () => {
   }, [isMenuOpen, isDropdownOpen]);
 
   const handleLogout = () => {
-    logout();
     navigate("/");
+    logout();
     setIsMenuOpen(false);
     setIsDropdownOpen(false);
   };

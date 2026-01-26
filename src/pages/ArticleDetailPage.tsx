@@ -197,6 +197,14 @@ const ArticleDetailPage = () => {
       <LoginRequiredDialog
         open={isLoginDialogOpen}
         onClose={() => setIsLoginDialogOpen(false)}
+        onCreateAccountClick={() => {
+          setIsLoginDialogOpen(false);
+          navigate("/signup");
+        }}
+        onLoginClick={() => {
+          setIsLoginDialogOpen(false);
+          navigate("/login");
+        }}
       />
 
       <article className="w-full flex-1">
