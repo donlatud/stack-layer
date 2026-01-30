@@ -1,7 +1,4 @@
-/**
- * BlogPost interface - Type definition for blog post data
- * Defines the structure of a blog post object
- */
+/** โครงสร้างบทความหนึ่งรายการ */
 export interface BlogPost {
   id: number;
   image: string;
@@ -26,9 +23,7 @@ export interface BlogPostsResponse {
   nextPage: number | null;
 }
 
-/**
- * Query parameters for fetching blog posts
- */
+/** query params สำหรับดึงบทความ (page, limit, category, keyword) */
 export interface FetchBlogPostsParams {
   page?: number;
   limit?: number;

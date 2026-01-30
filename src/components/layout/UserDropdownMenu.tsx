@@ -1,4 +1,5 @@
 import { User, Lock, LogOut } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface UserDropdownMenuProps {
   onProfileClick?: () => void;
@@ -7,10 +8,14 @@ interface UserDropdownMenuProps {
   className?: string;
 }
 
+/** คลาสปุ่มเมนูใช้ร่วมกัน: ไอคอน+ข้อความ */
+const ITEM_BASE = "flex items-center gap-[12px] transition-colors text-left";
+const ITEM_MOBILE = "px-[12px] py-[12px] rounded-[8px] hover:bg-brown-200";
+const ITEM_DESKTOP = "px-[16px] py-[12px] hover:bg-brown-50";
+
 /**
- * UserDropdownMenu component - Reusable dropdown menu for user actions
- * Displays Profile, Reset password, and Log out options with icons
- * Can be used in both desktop (lg+) and mobile (md) contexts
+ * เมนู dropdown ผู้ใช้: Profile, Reset password, Log out
+ * ใช้ทั้งใน MemberNavBar เดสก์ท็อป และเมนูมือถือ; ถ้า className มี "bg-brown-100" ถือว่าเป็นโหมดมือถือ (สไตล์ต่างกัน)
  */
 const UserDropdownMenu = ({
   onProfileClick,
@@ -18,44 +23,26 @@ const UserDropdownMenu = ({
   onLogoutClick,
   className = "",
 }: UserDropdownMenuProps) => {
-  // Check if this is mobile context (has brown-100 background)
-  const isMobileContext = className.includes("bg-brown-100");
+  const isMobile = className.includes("bg-brown-100");
+  const itemClass = cn(ITEM_BASE, isMobile ? ITEM_MOBILE : ITEM_DESKTOP);
 
   return (
     <div
-      className={`${isMobileContext
-          ? "bg-transparent shadow-none border-0"
-          : "bg-white rounded-[8px] shadow-lg shadow-brown-300/20 border border-brown-200"
-        } ${className}`}
+      className={cn(
+        isMobile ? "bg-transparent shadow-none border-0" : "bg-white rounded-[8px] shadow-lg shadow-brown-300/20 border border-brown-200",
+        className
+      )}
     >
-      <div className={`flex flex-col ${isMobileContext ? "gap-[8px]" : "py-[8px]"}`}>
-        <button
-          onClick={onProfileClick}
-          className={`flex items-center gap-[12px] ${isMobileContext
-              ? "px-[12px] py-[12px] rounded-[8px] hover:bg-brown-200"
-              : "px-[16px] py-[12px] hover:bg-brown-50"
-            } transition-colors text-left`}
-        >
+      <div className={cn("flex flex-col", isMobile ? "gap-[8px]" : "py-[8px]")}>
+        <button type="button" onClick={onProfileClick} className={itemClass}>
           <User className="w-[20px] h-[20px] text-brown-600 shrink-0" />
           <span className="text-body-1 text-brown-600">Profile</span>
         </button>
-        <button
-          onClick={onResetPasswordClick}
-          className={`flex items-center gap-[12px] ${isMobileContext
-              ? "px-[12px] py-[12px] rounded-[8px] hover:bg-brown-200"
-              : "px-[16px] py-[12px] hover:bg-brown-50"
-            } transition-colors text-left`}
-        >
+        <button type="button" onClick={onResetPasswordClick} className={itemClass}>
           <Lock className="w-[20px] h-[20px] text-brown-600 shrink-0" />
           <span className="text-body-1 text-brown-600">Reset password</span>
         </button>
-        <button
-          onClick={onLogoutClick}
-          className={`flex items-center gap-[12px] ${isMobileContext
-              ? "px-[12px] py-[12px] rounded-[8px] hover:bg-brown-200"
-              : "px-[16px] py-[12px] hover:bg-brown-50"
-            } transition-colors text-left`}
-        >
+        <button type="button" onClick={onLogoutClick} className={itemClass}>
           <LogOut className="w-[20px] h-[20px] text-brown-600 shrink-0" />
           <span className="text-body-1 text-brown-600">Log out</span>
         </button>

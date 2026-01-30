@@ -1,7 +1,6 @@
 /**
- * HeroContent component - Main hero text content
- * Displays hero title and description
- * Responsive layout: centered on mobile, right-aligned on desktop
+ * ข้อความหลักใน Hero: หัวข้อ "Stay Informed, Stay Inspired" และคำอธิบาย
+ * มือถือกึ่งกลาง; เดสก์ท็อปจัดขวา
  */
 export const HeroContent = () => {
   return (

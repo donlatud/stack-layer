@@ -1,10 +1,6 @@
 import { toast } from "sonner";
 
-/**
- * Copies a URL to the clipboard and shows a success toast notification
- * Toast automatically disappears after 2 seconds
- * @param url - The URL to copy to clipboard
- */
+/** คัดลอก URL ลงคลิปบอร์ด และแสดง toast สำเร็จ/ไม่สำเร็จ */
 export const copyLinkToClipboard = async (url: string): Promise<void> => {
   try {
     await navigator.clipboard.writeText(url);

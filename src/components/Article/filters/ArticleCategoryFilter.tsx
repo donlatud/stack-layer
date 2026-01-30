@@ -13,9 +13,8 @@ interface ArticleCategoryFilterProps {
 }
 
 /**
- * ArticleCategoryFilter component - Category dropdown filter for mobile view
- * Uses Select component from shadcn/ui
- * Allows users to filter articles by category
+ * ดรอปดาวน์เลือกหมวดหมู่ (แสดงในมือถือ/แท็บเล็ต; ซ่อนใน lg+)
+ * ใช้ Select จาก shadcn/ui
  */
 const ArticleCategoryFilter = ({
   selectedCategory,

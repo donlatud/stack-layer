@@ -11,9 +11,8 @@ interface ArticleSearchBarProps {
 }
 
 /**
- * ArticleSearchBar component - Search input for filtering articles
- * Controlled component that searches article titles, descriptions, and content
- * Includes search icon with hover effects and autocomplete dropdown
+ * ช่องค้นหาบทความ (ค้นจาก title, description, content ฝั่ง client)
+ * มีไอคอนค้นหา และดรอปดาวน์ autocomplete เมื่อพิมพ์
  */
 const ArticleSearchBar = ({
   value,

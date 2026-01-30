@@ -1,13 +1,7 @@
 import type { BlogPost, FetchBlogPostsParams } from "../types/blog";
 import { SPECIAL_CATEGORIES, POSTS_PER_PAGE } from "../constants/pagination";
 
-/**
- * Builds API parameters for fetching blog posts
- * @param page - Page number
- * @param category - Selected category
- * @param keyword - Search keyword (optional)
- * @returns API parameters object
- */
+/** สร้าง params สำหรับ fetch บทความ: page, limit, category (ถ้าไม่ใช่ special), keyword (ถ้ามี) */
 export const buildApiParams = (
   page: number,
   category: string,
@@ -52,11 +46,7 @@ export const filterPostsBySearch = (
   );
 };
 
-/**
- * Checks if there are more posts to load
- * @param response - API response
- * @returns Boolean indicating if there are more posts
- */
+/** ตรวจว่ายังโหลดหน้าถัดไปได้ไหม (มี nextPage และจำนวนโพสต์ครบ limit) */
 export const checkHasMore = (response: {
   nextPage: number | null;
   currentPage: number;

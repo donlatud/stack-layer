@@ -5,8 +5,7 @@ import AuthFormCard from "../components/auth/AuthFormCard";
 import BlackButton from "../components/common/BlackButton";
 
 /**
- * RegistrationSuccessPage component - Success page after registration
- * Displays success icon, message, and continue button
+ * หน้าหลังสมัครสำเร็จ: ไอคอน, ข้อความ, ปุ่มไปหน้าแรก; รับ user จาก location.state
  */
 const RegistrationSuccessPage = () => {
   const navigate = useNavigate();

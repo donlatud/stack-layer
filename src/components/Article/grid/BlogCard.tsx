@@ -3,7 +3,7 @@ import { useAuth } from "../../../contexts/AuthContext";
 import authorLogo from "../../../assets/author-logo.svg";
 
 interface BlogCardProps {
-  id: number; // เพิ่ม id prop
+  id: number;
   image: string;
   category: string;
   title: string;
@@ -13,10 +13,8 @@ interface BlogCardProps {
 }
 
 /**
- * BlogCard component - Displays a single blog post card
- * Shows post image, category, title, description, author, and date
- * Includes hover effects and navigation to article detail page
- * Uses member route if user is logged in
+ * การ์ดบทความ: รูป, หมวดหมู่, หัวข้อ, คำอธิบาย, ผู้เขียน, วันที่
+ * คลิกไป /post/:id หรือ /member/post/:id ถ้าล็อกอินแล้ว
  */
 const BlogCard = ({
   id,

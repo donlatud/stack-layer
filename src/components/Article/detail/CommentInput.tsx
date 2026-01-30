@@ -3,6 +3,10 @@ interface CommentInputProps {
   onRequireLogin?: () => void;
 }
 
+/**
+ * ช่องเขียนคอมเมนต์ + ปุ่ม Send
+ * disabled และมี onRequireLogin: คลิก/โฟกัสจะเรียก onRequireLogin (เพื่อแสดง LoginRequired)
+ */
 const CommentInput = ({ disabled = false, onRequireLogin }: CommentInputProps) => {
   return (
     <div className="flex flex-col gap-[12px]">

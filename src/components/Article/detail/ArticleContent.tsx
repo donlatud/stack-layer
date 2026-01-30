@@ -6,8 +6,7 @@ interface ArticleContentProps {
 }
 
 /**
- * ArticleContent - Renders only the markdown content
- * Author card is now handled at the page level for responsive layout
+ * เนื้อหาบทความในรูปแบบ Markdown
  */
 const ArticleContent = ({ article }: ArticleContentProps) => {
   return (

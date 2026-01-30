@@ -1,6 +1,7 @@
 import BlogCard from "./BlogCard";
 import WhiteButton from "../../common/WhiteButton";
 import type { BlogPost } from "../../../types/blog";
+import { cn } from "@/lib/utils";
 
 interface ArticleGridProps {
   posts: BlogPost[];
@@ -9,22 +10,11 @@ interface ArticleGridProps {
   onLoadMore: () => void;
 }
 
-/**
- * Gets className for View More button based on loading state
- */
-const getViewMoreButtonClassName = (isLoadingMore: boolean): string => {
-  const baseClasses =
-    "w-[86px] h-[24px] rounded-[5px] text-body-2 border-none underline transition-all duration-300";
-  const enabledClasses =
-    "hover:no-underline hover:scale-110 hover:font-semibold active:scale-100 cursor-pointer";
-  const disabledClasses = "opacity-50 cursor-not-allowed";
-
-  return `${baseClasses} ${!isLoadingMore ? enabledClasses : disabledClasses}`;
-};
+const VIEW_MORE_BASE =
+  "w-[86px] h-[24px] rounded-[5px] text-body-2 border-none underline transition-all duration-300";
 
 /**
- * ArticleGrid component - Displays blog posts in a responsive grid layout
- * Implements pagination: shows posts from API, loads more on "View more" click
+ * กริดการ์ดบทความ + ปุ่ม "View more" โหลดหน้าเพิ่ม
  */
 const ArticleGrid = ({
   posts,
@@ -56,9 +46,15 @@ const ArticleGrid = ({
           <WhiteButton
             onClick={onLoadMore}
             disabled={isLoadingMore}
-            children="View more"
-            className={getViewMoreButtonClassName(isLoadingMore)}
-          />
+            className={cn(
+              VIEW_MORE_BASE,
+              isLoadingMore
+                ? "opacity-50 cursor-not-allowed"
+                : "hover:no-underline hover:scale-110 hover:font-semibold active:scale-100 cursor-pointer"
+            )}
+          >
+            View more
+          </WhiteButton>
         </div>
       )}
     </div>

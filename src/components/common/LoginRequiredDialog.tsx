@@ -3,17 +3,28 @@ import { X } from "lucide-react";
 interface LoginRequiredDialogProps {
   open: boolean;
   onClose: () => void;
+  /** เมื่อกด "Create account" (ส่งจาก parent เช่น navigate ไป /signup แล้วปิดโมดัล) */
+  onCreateAccountClick?: () => void;
+  /** เมื่อกด "Log in" (ส่งจาก parent เช่น navigate ไป /login แล้วปิดโมดัล) */
+  onLoginClick?: () => void;
 }
 
 /**
- * LoginRequiredDialog - Alert dialog shown when user isn't logged in
- * Shows a modal that asks user to create account / log in
+ * โมดัลแจ้งให้สมัครหรือเข้าสู่ระบบ
+ * ใช้เมื่อผู้ใช้ยังไม่ล็อกอินแล้วกระทำที่ต้องล็อกอิน
+ * ส่ง onCreateAccountClick / onLoginClick เพื่อไปหน้าสมัครหรือล็อกอิน
  */
-const LoginRequiredDialog = ({ open, onClose }: LoginRequiredDialogProps) => {
+const LoginRequiredDialog = ({
+  open,
+  onClose,
+  onCreateAccountClick,
+  onLoginClick,
+}: LoginRequiredDialogProps) => {
   if (!open) return null;
 
   return (
     <div className="fixed inset-0 z-50">
+      {/* พื้นหลังมืด กดแล้วปิด */}
       <button
         type="button"
         aria-label="Close dialog"
@@ -47,6 +58,7 @@ const LoginRequiredDialog = ({ open, onClose }: LoginRequiredDialogProps) => {
 
           <button
             type="button"
+            onClick={onCreateAccountClick}
             className="h-[48px] px-[40px] rounded-[999px] bg-black text-white text-body-1 font-medium hover:opacity-90 transition-opacity"
           >
             Create account
@@ -58,6 +70,7 @@ const LoginRequiredDialog = ({ open, onClose }: LoginRequiredDialogProps) => {
             </span>
             <button
               type="button"
+              onClick={onLoginClick}
               className="underline text-brown-600 font-semibold hover:opacity-90 transition-opacity"
             >
               Log in

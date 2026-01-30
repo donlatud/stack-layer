@@ -3,10 +3,7 @@ import axios from "axios";
 
 const API_BASE_URL = "https://blog-post-project-api.vercel.app";
 
-/**
- * Converts ISO 8601 date string to formatted date string
- * Example: "2024-09-11T00:00:00.000Z" -> "11 September 2024"
- */
+/** แปลง ISO date เป็น "11 September 2024" */
 export const formatDate = (isoDateString: string): string => {
   const date = new Date(isoDateString);
   const day = date.getDate();
@@ -29,11 +26,7 @@ export const formatDate = (isoDateString: string): string => {
   return `${day} ${month} ${year}`;
 };
 
-/**
- * Fetches blog posts from API with optional query parameters
- * @param params - Query parameters (page, limit, category, keyword)
- * @returns Promise with blog posts response
- */
+/** ดึงบทความจาก API (รองรับ page, limit, category, keyword) และ format วันที่ */
 export const fetchBlogPosts = async (
   params?: FetchBlogPostsParams
 ): Promise<BlogPostsResponse> => {

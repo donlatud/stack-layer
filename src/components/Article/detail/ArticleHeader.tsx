@@ -8,23 +8,22 @@ interface ArticleHeaderProps {
 }
 
 /**
- * ArticleHeader - Only renders back button and image
- * For lg breakpoint restructure
+ * หัวข้อหน้ารายละเอียดบทความ: ปุ่ม Back to Posts + รูปบทความ
+ * Back ไป /member หรือ / ตามสถานะล็อกอิน
  */
 const ArticleHeader = ({ article }: ArticleHeaderProps) => {
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
 
   const handleBackClick = () => {
-    // If logged in, go to member homepage, otherwise go to public homepage
     navigate(isAuthenticated ? "/member" : "/");
   };
 
   return (
     <section className="w-full pt-[24px] pb-[20px] md:pt-[40px] md:pr-[40px] md:pb-[40px] md:pl-[40px] lg:pt-[60px] lg:pr-[60px] lg:pb-[40px] lg:pl-[60px] xl:pr-[120px] xl:pl-[120px]">
       <div className="w-full max-w-[1200px] mx-auto flex flex-col gap-[24px] md:gap-[32px]">
-        {/* Back Button */}
         <button
+          type="button"
           onClick={handleBackClick}
           className="flex pl-[16px] pr-[16px] md:pl-0 md:pr-0 items-center gap-[8px] text-body-1 text-brown-600 hover:text-brown-700 transition-colors self-start"
         >

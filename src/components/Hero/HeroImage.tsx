@@ -1,8 +1,7 @@
 import heroImage from "../../assets/hero-image.png";
 
 /**
- * HeroImage component - Hero section image
- * Displays hero image with hover scale effect
+ * รูปภาพใน Hero; โฮเวอร์จะซูมเล็กน้อย
  */
 const HeroImage = () => {
   return (
@@ -10,7 +9,7 @@ const HeroImage = () => {
       <img
         className="w-full h-[470px] rounded-[16px] object-cover md:h-[500px] lg:h-[520px] xl:h-[529px] 2xl:h-[529px] transition-transform duration-500 group-hover:scale-110"
         src={heroImage}
-        alt="hero image"
+        alt="Hero section illustration"
       />
     </div>
   );
