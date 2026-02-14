@@ -30,7 +30,7 @@ const CreateArticlePage = () => {
   const { articleId } = useParams<{ articleId?: string }>();
   const isEditMode = !!articleId;
 
-  const [thumbnailImage, setThumbnailImage] = useState<File | null>(null);
+  const [, setThumbnailImage] = useState<File | null>(null);
   const [thumbnailPreview, setThumbnailPreview] = useState<string>("");
   const [imageUrl, setImageUrl] = useState<string>("");
   const [category, setCategory] = useState("");
