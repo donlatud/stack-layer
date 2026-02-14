@@ -1,9 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import AdminLayout from "../../components/admin/AdminLayout";
 import { Plus, Search, Edit, Trash2, ChevronDown } from "lucide-react";
 import BlackButton from "../../components/common/BlackButton";
 import { cn } from "../../lib/utils";
+import { fetchAdminPosts } from "../../data/postsApi";
+import type { AdminPostItem } from "../../data/postsApi";
 
 /**
  * หน้าจัดการบทความ (Admin)
@@ -16,48 +18,29 @@ const AdminArticlePage = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [categoryFilter, setCategoryFilter] = useState("all");
+  const [articles, setArticles] = useState<AdminPostItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // TODO: แทนที่ด้วยข้อมูลจาก API
-  const articles = [
-    {
-      id: 1,
-      title: "Understanding Cat Behaviors: Why Your Feline Friend Acts The Way They Do...",
-      category: "Cat",
-      status: "Published",
-    },
-    {
-      id: 2,
-      title: "The Fascinating World of Cats: Why We Love Our Furry Friends",
-      category: "General",
-      status: "Published",
-    },
-    {
-      id: 3,
-      title: "Dog Training Tips for Beginners",
-      category: "Dog",
-      status: "Draft",
-    },
-    {
-      id: 4,
-      title: "Finding Motivation: How to Stay Inspired Through Life’s Challenges",
-      category: "General",
-      status: "Published",
-    },
-    {
-      id: 5,
-      title: "The Science of the Cat’s Purr: How It Benefits Cats and Humans Alike",
-      category: "Cat",
-      status: "Published",
-    },
-    {
-      id: 6,
-      title: "Top 10 Health Tips to Keep Your Cat Happy and Healthy",
-      category: "Cat",
-      status: "Published",
-    },
-  ];
+  useEffect(() => {
+    const loadArticles = async () => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        const data = await fetchAdminPosts();
+        setArticles(data);
+      } catch (err) {
+        console.error("Error loading articles:", err);
+        setError("Failed to load articles.");
+        setArticles([]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    loadArticles();
+  }, []);
 
-  // กรองบทความตามคำค้น, สถานะ และหมวดหมู่ (client-side จนกว่าจะมี API)
+  // กรองบทความตามคำค้น, สถานะ และหมวดหมู่ (client-side)
   const filteredArticles = articles.filter((article) => {
     const q = searchQuery.trim().toLowerCase();
     const matchSearch = !q || article.title.toLowerCase().includes(q);
@@ -135,6 +118,7 @@ const AdminArticlePage = () => {
                 <option value="cat">Cat</option>
                 <option value="dog">Dog</option>
                 <option value="general">General</option>
+                <option value="inspiration">Inspiration</option>
               </select>
               <ChevronDown className="pointer-events-none absolute right-[12px] top-1/2 -translate-y-1/2 w-[16px] h-[16px] text-brown-400" />
             </div>
@@ -142,74 +126,84 @@ const AdminArticlePage = () => {
         </form>
 
         <section className="bg-white rounded-[8px] border border-gray-200 overflow-hidden">
-          <table className="w-full" aria-label="Articles table">
-            <thead>
-              <tr className="border-b border-gray-200">
-                <th className="px-[24px] py-[16px] text-left text-body-2 text-gray-600 font-medium">
-                  Article Title
-                </th>
-                <th className="px-[24px] py-[16px] text-left text-body-2 text-gray-600 font-medium">
-                  Category
-                </th>
-                <th className="px-[24px] py-[16px] text-left text-body-2 text-gray-600 font-medium">
-                  Status
-                </th>
-                <th className="px-[24px] py-[16px] text-right text-body-2 text-gray-600 font-medium">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredArticles.map((article) => (
-                <tr
-                  key={article.id}
-                  className="border-b border-gray-100 last:border-b-0 hover:bg-gray-50 transition-colors"
-                >
-                  <td className="px-[24px] py-[16px] text-body-1 text-brown-600">{article.title}</td>
-                  <td className="px-[24px] py-[16px] text-body-1 text-brown-600">{article.category}</td>
-                  <td className="px-[24px] py-[16px]">
-                    <span
-                      className={cn(
-                        "inline-block px-[12px] py-[4px] rounded-full text-body-2 font-medium",
-                        article.status === "Published"
-                          ? "bg-brand-green-light text-brand-green"
-                          : "bg-gray-100 text-gray-700"
-                      )}
-                    >
-                      {article.status}
-                    </span>
-                  </td>
-                  <td className="px-[24px] py-[16px]">
-                    <div className="flex items-center justify-end gap-[12px]">
-                      <button
-                        type="button"
-                        className="w-[32px] h-[32px] flex items-center justify-center text-gray-600 hover:text-brand-red transition-colors"
-                        aria-label={`Edit: ${article.title}`}
-                        onClick={() => navigate(`/admin/article/${article.id}/edit`)}
-                      >
-                        <Edit className="w-[18px] h-[18px]" />
-                      </button>
-                      <button
-                        type="button"
-                        className="w-[32px] h-[32px] flex items-center justify-center text-gray-600 hover:text-red-600 transition-colors"
-                        aria-label={`Delete: ${article.title}`}
-                        onClick={() => navigate(`/admin/article/${article.id}/delete`)}
-                      >
-                        <Trash2 className="w-[18px] h-[18px]" />
-                      </button>
-                    </div>
-                  </td>
+          {isLoading ? (
+            <div className="px-[24px] py-[60px] text-center text-body-1 text-brown-400">
+              Loading...
+            </div>
+          ) : error ? (
+            <div className="px-[24px] py-[60px] text-center text-body-1 text-brand-red">
+              {error}
+            </div>
+          ) : (
+            <table className="w-full" aria-label="Articles table">
+              <thead>
+                <tr className="border-b border-gray-200">
+                  <th className="px-[24px] py-[16px] text-left text-body-2 text-gray-600 font-medium">
+                    Article Title
+                  </th>
+                  <th className="px-[24px] py-[16px] text-left text-body-2 text-gray-600 font-medium">
+                    Category
+                  </th>
+                  <th className="px-[24px] py-[16px] text-left text-body-2 text-gray-600 font-medium">
+                    Status
+                  </th>
+                  <th className="px-[24px] py-[16px] text-right text-body-2 text-gray-600 font-medium">
+                    Actions
+                  </th>
                 </tr>
-              ))}
-              {filteredArticles.length === 0 && (
-                <tr>
-                  <td className="px-[24px] py-[20px] text-body-1 text-brown-400" colSpan={4}>
-                    No articles found.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {filteredArticles.map((article) => (
+                  <tr
+                    key={article.id}
+                    className="border-b border-gray-100 last:border-b-0 hover:bg-gray-50 transition-colors"
+                  >
+                    <td className="px-[24px] py-[16px] text-body-1 text-brown-600">{article.title}</td>
+                    <td className="px-[24px] py-[16px] text-body-1 text-brown-600">{article.category}</td>
+                    <td className="px-[24px] py-[16px]">
+                      <span
+                        className={cn(
+                          "inline-block px-[12px] py-[4px] rounded-full text-body-2 font-medium",
+                          article.status === "Published"
+                            ? "bg-brand-green-light text-brand-green"
+                            : "bg-gray-100 text-gray-700"
+                        )}
+                      >
+                        {article.status}
+                      </span>
+                    </td>
+                    <td className="px-[24px] py-[16px]">
+                      <div className="flex items-center justify-end gap-[12px]">
+                        <button
+                          type="button"
+                          className="w-[32px] h-[32px] flex items-center justify-center text-gray-600 hover:text-brand-red transition-colors"
+                          aria-label={`Edit: ${article.title}`}
+                          onClick={() => navigate(`/admin/article/${article.id}/edit`)}
+                        >
+                          <Edit className="w-[18px] h-[18px]" />
+                        </button>
+                        <button
+                          type="button"
+                          className="w-[32px] h-[32px] flex items-center justify-center text-gray-600 hover:text-red-600 transition-colors"
+                          aria-label={`Delete: ${article.title}`}
+                          onClick={() => navigate(`/admin/article/${article.id}/delete`)}
+                        >
+                          <Trash2 className="w-[18px] h-[18px]" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+                {filteredArticles.length === 0 && (
+                  <tr>
+                    <td className="px-[24px] py-[20px] text-body-1 text-brown-400" colSpan={4}>
+                      No articles found.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          )}
         </section>
       </section>
     </AdminLayout>

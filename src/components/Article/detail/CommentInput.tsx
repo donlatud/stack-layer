@@ -1,13 +1,36 @@
 interface CommentInputProps {
   disabled?: boolean;
   onRequireLogin?: () => void;
+  /** โหมดสมาชิก: controlled input + ส่ง comment ผ่าน onSend */
+  value?: string;
+  onChange?: (value: string) => void;
+  onSend?: (text: string) => void;
+  isSending?: boolean;
 }
 
 /**
  * ช่องเขียนคอมเมนต์ + ปุ่ม Send
  * disabled และมี onRequireLogin: คลิก/โฟกัสจะเรียก onRequireLogin (เพื่อแสดง LoginRequired)
+ * มี onSend: ใช้ value/onChange และกด Send จะเรียก onSend(text)
  */
-const CommentInput = ({ disabled = false, onRequireLogin }: CommentInputProps) => {
+const CommentInput = ({
+  disabled = false,
+  onRequireLogin,
+  value = "",
+  onChange,
+  onSend,
+  isSending = false,
+}: CommentInputProps) => {
+  const handleSend = () => {
+    if (disabled) {
+      onRequireLogin?.();
+      return;
+    }
+    if (onSend && value.trim()) {
+      onSend(value.trim());
+    }
+  };
+
   return (
     <div className="flex flex-col gap-[12px]">
       <div className="flex flex-col gap-[4px]">
@@ -15,6 +38,8 @@ const CommentInput = ({ disabled = false, onRequireLogin }: CommentInputProps) =
         <textarea
           placeholder="What are your thoughts?"
           readOnly={disabled}
+          value={onChange != null ? value : undefined}
+          onChange={onChange != null ? (e) => onChange(e.target.value) : undefined}
           onClick={() => {
             if (disabled) onRequireLogin?.();
           }}
@@ -28,12 +53,11 @@ const CommentInput = ({ disabled = false, onRequireLogin }: CommentInputProps) =
       </div>
       <button
         type="button"
-        onClick={() => {
-          if (disabled) onRequireLogin?.();
-        }}
-        className="self-start md:self-end h-[48px] px-[40px] py-[12px] bg-brown-600 text-white text-body-1 rounded-[999px] hover:opacity-90 transition-colors"
+        onClick={handleSend}
+        disabled={isSending}
+        className="self-start md:self-end h-[48px] px-[40px] py-[12px] bg-brown-600 text-white text-body-1 rounded-[999px] hover:opacity-90 transition-colors disabled:opacity-60"
       >
-        Send
+        {isSending ? "Sending..." : "Send"}
       </button>
     </div>
   );

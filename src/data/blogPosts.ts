@@ -1,7 +1,47 @@
-import type { BlogPostsResponse, FetchBlogPostsParams } from "../types/blog";
+import type { BlogPost, BlogPostsResponse, FetchBlogPostsParams } from "../types/blog";
 import axios from "axios";
+import { apiClient } from "../lib/apiClient";
+import { CATEGORY_ID_TO_NAME, CATEGORY_NAME_TO_ID } from "../constants/categories";
 
-const API_BASE_URL = "https://blog-post-project-api.vercel.app";
+/** โครงสร้าง post จาก API (stack-layer-server) */
+interface ApiPost {
+  id: number;
+  image: string;
+  category_id: number;
+  title: string;
+  description: string;
+  date: string;
+  content: string;
+  status_id: number;
+  likes_count: number;
+  is_liked?: boolean;
+}
+
+/** โครงสร้าง response จาก stack-layer-server GET /posts */
+interface ApiPostsResponse {
+  data: {
+    totalPosts: number;
+    totalPages: number;
+    currentPage: number;
+    limit: number;
+    posts: ApiPost[];
+    nextPage: number | null;
+  };
+}
+
+/** แปลง post จาก API เป็น BlogPost สำหรับใช้ใน client */
+const mapApiPostToBlogPost = (post: ApiPost): BlogPost => ({
+  id: post.id,
+  image: post.image,
+  category: CATEGORY_ID_TO_NAME[post.category_id] ?? "General",
+  title: post.title,
+  description: post.description,
+  author: "Thompson P.",
+  date: formatDate(post.date),
+  likes: post.likes_count ?? 0,
+  content: post.content,
+  ...(typeof post.is_liked === "boolean" && { is_liked: post.is_liked }),
+});
 
 /** แปลง ISO date เป็น "11 September 2024" */
 export const formatDate = (isoDateString: string): string => {
@@ -26,13 +66,23 @@ export const formatDate = (isoDateString: string): string => {
   return `${day} ${month} ${year}`;
 };
 
-/** ดึงบทความจาก API (รองรับ page, limit, category, keyword) และ format วันที่ */
+/** แปลง ISO date เป็น "12 September 2024 at 18:30" (สำหรับ comment) */
+export const formatDateTime = (isoDateString: string): string => {
+  const date = new Date(isoDateString);
+  const datePart = formatDate(isoDateString);
+  const hours = date.getHours();
+  const minutes = date.getMinutes();
+  const pad = (n: number) => n.toString().padStart(2, "0");
+  return `${datePart} at ${pad(hours)}:${pad(minutes)}`;
+};
+
+/** ดึงบทความจาก API stack-layer-server (รองรับ page, limit, category, keyword) */
 export const fetchBlogPosts = async (
   params?: FetchBlogPostsParams
 ): Promise<BlogPostsResponse> => {
   try {
     const queryParams = new URLSearchParams();
-    
+
     if (params?.page) {
       queryParams.append("page", params.page.toString());
     }
@@ -40,27 +90,56 @@ export const fetchBlogPosts = async (
       queryParams.append("limit", params.limit.toString());
     }
     if (params?.category && params.category !== "All" && params.category !== "Highlight") {
-      queryParams.append("category", params.category);
+      const categoryId = CATEGORY_NAME_TO_ID[params.category];
+      if (categoryId != null) {
+        queryParams.append("category", categoryId.toString());
+      }
     }
     if (params?.keyword && params.keyword.trim() !== "") {
       queryParams.append("keyword", params.keyword.trim());
     }
 
-    const url = `${API_BASE_URL}/posts${queryParams.toString() ? `?${queryParams.toString()}` : ""}`;
-    const response = await axios.get<BlogPostsResponse>(url);
-    
-    // Format dates in the response
-    const formattedPosts = response.data.posts.map((post) => ({
-      ...post,
-      date: formatDate(post.date),
-    }));
+    const url = `/posts${queryParams.toString() ? `?${queryParams.toString()}` : ""}`;
+    const response = await apiClient.get<ApiPostsResponse>(url);
+
+    const apiData = response.data.data;
+    const formattedPosts = apiData.posts.map((post) => mapApiPostToBlogPost(post));
 
     return {
-      ...response.data,
+      totalPosts: apiData.totalPosts,
+      totalPages: apiData.totalPages,
+      currentPage: apiData.currentPage,
+      limit: apiData.limit,
       posts: formattedPosts,
+      nextPage: apiData.nextPage,
     };
   } catch (error) {
     console.error("Error fetching blog posts:", error);
+    throw error;
+  }
+};
+
+/** โครงสร้าง response จาก stack-layer-server GET /posts/:id */
+interface ApiPostResponse {
+  data: ApiPost | null;
+}
+
+/** ดึงบทความเดียวจาก API ตาม ID (GET /posts/:postId) */
+export const fetchPostById = async (postId: string): Promise<BlogPost | null> => {
+  try {
+    const response = await apiClient.get<ApiPostResponse>(`/posts/${postId}`);
+
+    const post = response.data.data;
+    if (!post) {
+      return null;
+    }
+
+    return mapApiPostToBlogPost(post);
+  } catch (error) {
+    if (axios.isAxiosError(error) && error.response?.status === 404) {
+      return null;
+    }
+    console.error("Error fetching post by ID:", error);
     throw error;
   }
 };

@@ -20,6 +20,7 @@ type AdminConfirmModalProps = {
   onCancel: () => void;
   onConfirm: () => void;
   cancelLabel?: string;
+  confirmDisabled?: boolean;
 };
 
 const AdminConfirmModal = ({
@@ -29,6 +30,7 @@ const AdminConfirmModal = ({
   onCancel,
   onConfirm,
   cancelLabel = "Cancel",
+  confirmDisabled = false,
 }: AdminConfirmModalProps) => {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
@@ -61,6 +63,7 @@ const AdminConfirmModal = ({
               type="button"
               className="h-[44px] w-[132px] px-[32px]"
               onClick={onConfirm}
+              disabled={confirmDisabled}
             >
               {confirmLabel}
             </BlackButton>

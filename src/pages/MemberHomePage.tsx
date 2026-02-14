@@ -11,14 +11,14 @@ import Footer from "../components/layout/Footer";
  * ยังไม่ล็อกอินจะ redirect ไป / (หน้าแรก)
  */
 const MemberHomePage = () => {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, isLoading } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!isAuthenticated) navigate("/");
-  }, [isAuthenticated, navigate]);
+    if (!isLoading && !isAuthenticated) navigate("/");
+  }, [isAuthenticated, isLoading, navigate]);
 
-  if (!isAuthenticated) return null;
+  if (isLoading || !isAuthenticated) return null;
 
   return (
     <div className="w-full min-h-screen font-family-poppins flex flex-col">

@@ -1,16 +1,21 @@
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useState, useEffect } from "react";
 import type { ReactNode } from "react";
+import { getCurrentUser } from "../services/authService";
 
 interface User {
   name: string;
   email: string;
   avatar?: string;
+  username?: string;
+  id?: string;
+  role?: string;
 }
 
 interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
-  login: (userData: User) => void;
+  isLoading: boolean;
+  login: (userData: User, accessToken?: string) => void;
   logout: () => void;
   updateUser: (userData: Partial<User>) => void;
 }
@@ -28,21 +33,46 @@ interface AuthProviderProps {
   children: ReactNode;
 }
 
-/** เก็บ user ใน state + localStorage; ส่ง login, logout, updateUser ลง context */
+/** เก็บ user ใน state + localStorage; โหลด user จาก server ตอน refresh ถ้ามี token */
 export const AuthProvider = ({ children }: AuthProviderProps) => {
-  const [user, setUser] = useState<User | null>(() => {
-    const saved = localStorage.getItem("user");
-    return saved ? JSON.parse(saved) : null;
-  });
+  const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const login = (userData: User) => {
+  useEffect(() => {
+    const initAuth = async () => {
+      const token = localStorage.getItem("access_token");
+      if (!token) {
+        localStorage.removeItem("user");
+        setIsLoading(false);
+        return;
+      }
+
+      const fetchedUser = await getCurrentUser();
+      if (fetchedUser) {
+        setUser(fetchedUser);
+        localStorage.setItem("user", JSON.stringify(fetchedUser));
+      } else {
+        localStorage.removeItem("user");
+        localStorage.removeItem("access_token");
+      }
+      setIsLoading(false);
+    };
+
+    initAuth();
+  }, []);
+
+  const login = (userData: User, accessToken?: string) => {
     setUser(userData);
     localStorage.setItem("user", JSON.stringify(userData));
+    if (accessToken) {
+      localStorage.setItem("access_token", accessToken);
+    }
   };
 
   const logout = () => {
     setUser(null);
     localStorage.removeItem("user");
+    localStorage.removeItem("access_token");
   };
 
   const updateUser = (userData: Partial<User>) => {
@@ -58,6 +88,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       value={{
         user,
         isAuthenticated: !!user,
+        isLoading,
         login,
         logout,
         updateUser,

@@ -3,9 +3,9 @@ import { useParams, useNavigate } from "react-router-dom";
 import NavBar from "../components/layout/NavBar";
 import Footer from "../components/layout/Footer";
 import { useAuth } from "../contexts/AuthContext";
-import { fetchBlogPosts } from "../data/blogPosts";
-import { buildApiParams } from "../utils/blogUtils";
-import { DEFAULT_PAGE } from "../constants/pagination";
+import { fetchPostById } from "../data/blogPosts";
+import { fetchComments } from "../data/commentsApi";
+import type { CommentItem } from "../data/commentsApi";
 import type { BlogPost } from "../types/blog";
 import ArticleHeader from "../components/Article/detail/ArticleHeader";
 import ArticleMeta from "../components/Article/detail/ArticleMeta";
@@ -18,25 +18,26 @@ import { copyLinkToClipboard } from "../utils/clipboardUtils";
 
 /**
  * หน้ารายละเอียดบทความ (path /post/:postId)
- * ดึงบทความจาก ID; ถ้ายังไม่เจอจะข้ามไปหน้าถัดไปจนกว่าจะเจอหรือหมด
+ * ดึงบทความจาก GET /posts/:postId
  * ถ้าล็อกอินแล้วจะ redirect ไป /member/post/:postId
  */
 const ArticleDetailPage = () => {
   const { postId } = useParams<{ postId: string }>();
   const navigate = useNavigate();
   const [article, setArticle] = useState<BlogPost | null>(null);
+  const [comments, setComments] = useState<CommentItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isLoginDialogOpen, setIsLoginDialogOpen] = useState(false);
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, isLoading: isAuthLoading } = useAuth();
   const isLoggedIn = isAuthenticated;
 
   // ล็อกอินอยู่แล้ว → ไปหน้ารายละเอียดของ member แทน
   useEffect(() => {
-    if (isAuthenticated && postId) {
+    if (!isAuthLoading && isAuthenticated && postId) {
       navigate(`/member/post/${postId}`, { replace: true });
     }
-  }, [isAuthenticated, postId, navigate]);
+  }, [isAuthenticated, isAuthLoading, postId, navigate]);
 
   useEffect(() => {
     const loadArticle = async () => {
@@ -49,40 +50,8 @@ const ArticleDetailPage = () => {
         return;
       }
 
-      const targetId = parseInt(postId, 10);
-      if (isNaN(targetId)) {
-        setError("Invalid article ID");
-        setIsLoading(false);
-        return;
-      }
-
       try {
-        let currentPage = DEFAULT_PAGE;
-        let foundArticle: BlogPost | null = null;
-        let hasMorePages = true;
-
-        // Search through all pages until we find the article
-        while (hasMorePages && !foundArticle) {
-          const params = buildApiParams(currentPage, "Highlight");
-          const response = await fetchBlogPosts(params);
-
-          // Check if article exists in current page
-          foundArticle =
-            response.posts.find((post) => post.id === targetId) || null;
-
-          if (foundArticle) {
-            break;
-          }
-
-          // Check if there are more pages to search
-          hasMorePages =
-            response.nextPage !== null &&
-            response.currentPage < response.totalPages;
-
-          if (hasMorePages) {
-            currentPage = response.nextPage!;
-          }
-        }
+        const foundArticle = await fetchPostById(postId);
 
         if (!foundArticle) {
           setError("Article not found");
@@ -103,30 +72,18 @@ const ArticleDetailPage = () => {
     loadArticle();
   }, [postId, navigate]);
 
-  // Mock comments data
-  const mockComments = [
-    {
-      avatar: "https://i.pravatar.cc/150?img=1",
-      name: "Jacob Lash",
-      date: "12 September 2024 at 18:30",
-      content:
-        "I loved this article! It really explains why my cat is so independent yet loving. The purring section was super interesting.",
-    },
-    {
-      avatar: "https://i.pravatar.cc/150?img=2",
-      name: "Ahri",
-      date: "12 September 2024 at 18:30",
-      content:
-        "Such a great read! I've always wondered why my cat slow blinks at me—now I know it's her way of showing trust!",
-    },
-    {
-      avatar: "https://i.pravatar.cc/150?img=3",
-      name: "Mimi mama",
-      date: "12 September 2024 at 18:30",
-      content:
-        "This article perfectly captures why cats make such amazing pets. I had no idea their purring could help with healing. Fascinating stuff!",
-    },
-  ];
+  useEffect(() => {
+    if (!postId) return;
+    const loadComments = async () => {
+      try {
+        const list = await fetchComments(postId);
+        setComments(list);
+      } catch (err) {
+        console.error("Error loading comments:", err);
+      }
+    };
+    loadComments();
+  }, [postId]);
 
   const handleCopyLink = async () => {
     await copyLinkToClipboard(window.location.href);
@@ -187,7 +144,7 @@ const ArticleDetailPage = () => {
 
 
   // Don't render if authenticated (will redirect to member version)
-  if (isAuthenticated) {
+  if (!isAuthLoading && isAuthenticated) {
     return null;
   }
 
@@ -257,7 +214,7 @@ const ArticleDetailPage = () => {
                 {/* LG: Shown here as part of main content */}
                 <div className="hidden lg:block pb-[60px]">
                   <ArticleCommentSection
-                    comments={mockComments}
+                    comments={comments}
                     disabled={!isLoggedIn}
                     onRequireLogin={requireLogin}
                   />
@@ -297,7 +254,7 @@ const ArticleDetailPage = () => {
           <div className="px-[16px] pt-[24px] pb-[40px] md:px-[40px] md:pt-[40px] md:pb-[50px]">
             <div className="w-full max-w-[800px] mx-auto">
               <ArticleCommentSection
-                comments={mockComments}
+                comments={comments}
                 disabled={!isLoggedIn}
                 onRequireLogin={requireLogin}
               />
