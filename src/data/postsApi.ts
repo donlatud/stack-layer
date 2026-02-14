@@ -65,18 +65,24 @@ export const deletePost = async (postId: string): Promise<void> => {
 /** รูป placeholder เมื่อยังไม่มี URL */
 export const PLACEHOLDER_IMAGE = "https://placehold.co/800x400?text=Thumbnail";
 
-/** แปลง form values เป็น CreatePostBody */
+/**
+ * แปลง form values เป็น CreatePostBody
+ * @param categoryOrId - ชื่อหมวดหมู่ (string) หรือ category_id (number) จาก API
+ */
 export const toCreatePostBody = (
   title: string,
   imageUrl: string,
-  category: string,
+  categoryOrId: string | number,
   description: string,
   content: string,
   statusId: number
 ): CreatePostBody => {
-  const categoryId = CATEGORY_NAME_TO_ID[category];
+  const categoryId =
+    typeof categoryOrId === "number"
+      ? categoryOrId
+      : CATEGORY_NAME_TO_ID[categoryOrId];
   if (categoryId == null) {
-    throw new Error(`Invalid category: ${category}`);
+    throw new Error(`Invalid category: ${categoryOrId}`);
   }
   return {
     title,

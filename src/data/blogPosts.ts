@@ -14,6 +14,7 @@ interface ApiPost {
   content: string;
   status_id: number;
   likes_count: number;
+  is_liked?: boolean;
 }
 
 /** โครงสร้าง response จาก stack-layer-server GET /posts */
@@ -39,6 +40,7 @@ const mapApiPostToBlogPost = (post: ApiPost): BlogPost => ({
   date: formatDate(post.date),
   likes: post.likes_count ?? 0,
   content: post.content,
+  ...(typeof post.is_liked === "boolean" && { is_liked: post.is_liked }),
 });
 
 /** แปลง ISO date เป็น "11 September 2024" */
@@ -62,6 +64,16 @@ export const formatDate = (isoDateString: string): string => {
   const month = monthNames[date.getMonth()];
   const year = date.getFullYear();
   return `${day} ${month} ${year}`;
+};
+
+/** แปลง ISO date เป็น "12 September 2024 at 18:30" (สำหรับ comment) */
+export const formatDateTime = (isoDateString: string): string => {
+  const date = new Date(isoDateString);
+  const datePart = formatDate(isoDateString);
+  const hours = date.getHours();
+  const minutes = date.getMinutes();
+  const pad = (n: number) => n.toString().padStart(2, "0");
+  return `${datePart} at ${pad(hours)}:${pad(minutes)}`;
 };
 
 /** ดึงบทความจาก API stack-layer-server (รองรับ page, limit, category, keyword) */

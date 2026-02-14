@@ -9,6 +9,8 @@ export interface BlogPost {
   date: string;
   likes: number;
   content: string;
+  /** มีเมื่อดึงจาก API พร้อม auth (GET /posts/:id) */
+  is_liked?: boolean;
 }
 
 /**

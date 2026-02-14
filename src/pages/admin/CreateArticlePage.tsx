@@ -13,6 +13,8 @@ import {
   toCreatePostBody,
   PLACEHOLDER_IMAGE,
 } from "../../data/postsApi";
+import { fetchCategories } from "../../data/categoriesApi";
+import type { CategoryItem } from "../../data/categoriesApi";
 
 const MAX_INTRODUCTION_LENGTH = 120;
 const STATUS_PUBLISHED = 1;
@@ -33,21 +35,38 @@ const CreateArticlePage = () => {
   const [, setThumbnailImage] = useState<File | null>(null);
   const [thumbnailPreview, setThumbnailPreview] = useState<string>("");
   const [imageUrl, setImageUrl] = useState<string>("");
-  const [category, setCategory] = useState("");
+  const [categories, setCategories] = useState<CategoryItem[]>([]);
+  const [categoryId, setCategoryId] = useState<number | "">("");
   const [authorName] = useState("Thompson P."); // คงที่ โหมดอ่านอย่างเดียว
   const [title, setTitle] = useState("");
   const [introduction, setIntroduction] = useState("");
   const [content, setContent] = useState("");
 
+  useEffect(() => {
+    const loadCategories = async () => {
+      try {
+        const data = await fetchCategories();
+        setCategories(data);
+      } catch (err) {
+        console.error("Error loading categories:", err);
+        toast.error("Failed to load categories");
+      }
+    };
+    loadCategories();
+  }, []);
+
   // โหลดข้อมูลบทความเมื่อเป็นโหมดแก้ไข
   useEffect(() => {
-    if (articleId) {
+    if (articleId && categories.length > 0) {
       const loadArticle = async () => {
         try {
           const article = await fetchPostById(articleId);
           if (article) {
             setTitle(article.title);
-            setCategory(article.category.toLowerCase());
+            const match = categories.find(
+              (c) => c.name.toLowerCase() === article.category.toLowerCase()
+            );
+            setCategoryId(match ? match.id : "");
             setIntroduction(article.description);
             setContent(article.content);
             setImageUrl(article.image);
@@ -60,7 +79,7 @@ const CreateArticlePage = () => {
       };
       loadArticle();
     }
-  }, [articleId]);
+  }, [articleId, categories.length]);
 
   const handleThumbnailUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -86,7 +105,7 @@ const CreateArticlePage = () => {
   };
 
   const handleSaveAsDraft = async () => {
-    if (!category) {
+    if (categoryId === "" || categoryId === undefined) {
       toast.error("Please select a category");
       return;
     }
@@ -98,7 +117,7 @@ const CreateArticlePage = () => {
       const body = toCreatePostBody(
         title.trim(),
         getEffectiveImageUrl(),
-        category,
+        categoryId,
         introduction.trim(),
         content.trim(),
         STATUS_DRAFT
@@ -122,7 +141,7 @@ const CreateArticlePage = () => {
   };
 
   const handleSaveAndPublish = async () => {
-    if (!category) {
+    if (categoryId === "" || categoryId === undefined) {
       toast.error("Please select a category");
       return;
     }
@@ -134,7 +153,7 @@ const CreateArticlePage = () => {
       const body = toCreatePostBody(
         title.trim(),
         getEffectiveImageUrl(),
-        category,
+        categoryId,
         introduction.trim(),
         content.trim(),
         STATUS_PUBLISHED
@@ -262,15 +281,18 @@ const CreateArticlePage = () => {
             </label>
             <select
               id="category"
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
+              value={categoryId === "" ? "" : categoryId}
+              onChange={(e) =>
+                setCategoryId(e.target.value === "" ? "" : Number(e.target.value))
+              }
               className="w-full h-[44px] px-[16px] bg-white border border-gray-300 rounded-[8px] text-body-1 text-brown-600 focus:outline-none focus:ring-2 focus:ring-brand-red focus:border-brand-red"
             >
               <option value="">Select category</option>
-              <option value="cat">Cat</option>
-              <option value="dog">Dog</option>
-              <option value="general">General</option>
-              <option value="inspiration">Inspiration</option>
+              {categories.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.name}
+                </option>
+              ))}
             </select>
           </section>
 

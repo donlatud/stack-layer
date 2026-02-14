@@ -4,6 +4,13 @@ import { useAuth } from "../contexts/AuthContext";
 import MemberNavBar from "../components/layout/MemberNavBar";
 import Footer from "../components/layout/Footer";
 import { fetchPostById } from "../data/blogPosts";
+import { addLike as addLikeApi, removeLike as removeLikeApi } from "../data/likesApi";
+import {
+  fetchComments,
+  createComment,
+  deleteComment,
+  type CommentItem,
+} from "../data/commentsApi";
 import type { BlogPost } from "../types/blog";
 import ArticleHeader from "../components/Article/detail/ArticleHeader";
 import ArticleMeta from "../components/Article/detail/ArticleMeta";
@@ -15,7 +22,7 @@ import { copyLinkToClipboard } from "../utils/clipboardUtils";
 
 /**
  * หน้ารายละเอียดบทความสำหรับสมาชิก (/member/post/:postId)
- * ใช้ MemberNavBar; Like เก็บใน localStorage ตามอีเมล; ต้องล็อกอิน
+ * ใช้ MemberNavBar; Like เก็บใน API (POST/DELETE /posts/:postId/like); ต้องล็อกอิน
  */
 const MemberArticleDetailPage = () => {
   const { postId } = useParams<{ postId: string }>();
@@ -26,27 +33,10 @@ const MemberArticleDetailPage = () => {
   const [error, setError] = useState<string | null>(null);
   const [likeCount, setLikeCount] = useState<number>(0);
   const [isLiked, setIsLiked] = useState<boolean>(false);
-
-  // Helper function to get liked posts from localStorage
-  const getLikedPosts = (): Set<number> => {
-    if (!user?.email) return new Set();
-    try {
-      const likedPosts = localStorage.getItem(`liked_posts_${user.email}`);
-      return likedPosts ? new Set(JSON.parse(likedPosts)) : new Set();
-    } catch {
-      return new Set();
-    }
-  };
-
-  // Helper function to save liked posts to localStorage
-  const saveLikedPosts = (likedPosts: Set<number>) => {
-    if (!user?.email) return;
-    try {
-      localStorage.setItem(`liked_posts_${user.email}`, JSON.stringify([...likedPosts]));
-    } catch (error) {
-      console.error("Error saving liked posts:", error);
-    }
-  };
+  const [isLikeLoading, setIsLikeLoading] = useState<boolean>(false);
+  const [comments, setComments] = useState<CommentItem[]>([]);
+  const [commentValue, setCommentValue] = useState("");
+  const [isSendingComment, setIsSendingComment] = useState(false);
 
   useEffect(() => {
     if (!isAuthLoading && !isAuthenticated) {
@@ -83,12 +73,8 @@ const MemberArticleDetailPage = () => {
         }
 
         setArticle(foundArticle);
-        const initialLikeCount = foundArticle.likes || 0;
-        setLikeCount(initialLikeCount);
-
-        const likedPosts = getLikedPosts();
-        const userHasLiked = likedPosts.has(targetId);
-        setIsLiked(userHasLiked);
+        setLikeCount(foundArticle.likes ?? 0);
+        setIsLiked(foundArticle.is_liked ?? false);
       } catch (err) {
         console.error("Error loading article:", err);
         setError("Failed to load article. Please try again later.");
@@ -103,30 +89,41 @@ const MemberArticleDetailPage = () => {
     }
   }, [postId, navigate, isAuthenticated]);
 
-  // Mock comments data
-  const mockComments = [
-    {
-      avatar: "https://i.pravatar.cc/150?img=1",
-      name: "Jacob Lash",
-      date: "12 September 2024 at 18:30",
-      content:
-        "I loved this article! It really explains why my cat is so independent yet loving. The purring section was super interesting.",
-    },
-    {
-      avatar: "https://i.pravatar.cc/150?img=2",
-      name: "Ahri",
-      date: "12 September 2024 at 18:30",
-      content:
-        "Such a great read! I've always wondered why my cat slow blinks at me—now I know it's her way of showing trust!",
-    },
-    {
-      avatar: "https://i.pravatar.cc/150?img=3",
-      name: "Mimi mama",
-      date: "12 September 2024 at 18:30",
-      content:
-        "This article perfectly captures why cats make such amazing pets. I had no idea their purring could help with healing. Fascinating stuff!",
-    },
-  ];
+  useEffect(() => {
+    if (!postId) return;
+    const loadComments = async () => {
+      try {
+        const list = await fetchComments(postId);
+        setComments(list);
+      } catch (err) {
+        console.error("Error loading comments:", err);
+      }
+    };
+    loadComments();
+  }, [postId]);
+
+  const handleSendComment = async (text: string) => {
+    if (!postId) return;
+    setIsSendingComment(true);
+    try {
+      const newComment = await createComment(postId, text);
+      setComments((prev) => [...prev, newComment]);
+      setCommentValue("");
+    } catch (err) {
+      console.error("Error sending comment:", err);
+    } finally {
+      setIsSendingComment(false);
+    }
+  };
+
+  const handleDeleteComment = async (commentId: number) => {
+    try {
+      await deleteComment(commentId);
+      setComments((prev) => prev.filter((c) => c.id !== commentId));
+    } catch (err) {
+      console.error("Error deleting comment:", err);
+    }
+  };
 
   // Function to copy article link to clipboard
   const handleCopyLink = async () => {
@@ -134,28 +131,21 @@ const MemberArticleDetailPage = () => {
     await copyLinkToClipboard(currentUrl);
   };
 
-  // Function to handle like button click (toggle like/unlike - Facebook style)
-  const handleLike = () => {
-    if (!postId || !user?.email) return;
-
-    const targetId = parseInt(postId, 10);
-    const likedPosts = getLikedPosts();
-    const newIsLiked = !isLiked;
-
-    setIsLiked(newIsLiked);
-
-    if (newIsLiked) {
-      // User is liking the post: add to liked posts and increment count
-      likedPosts.add(targetId);
-      setLikeCount((prevCount) => prevCount + 1);
-    } else {
-      // User is unliking the post: remove from liked posts and decrement count
-      likedPosts.delete(targetId);
-      setLikeCount((prevCount) => Math.max(0, prevCount - 1));
+  // Toggle like/unlike via API
+  const handleLike = async () => {
+    if (!postId || isLikeLoading) return;
+    setIsLikeLoading(true);
+    try {
+      const res = isLiked
+        ? await removeLikeApi(postId)
+        : await addLikeApi(postId);
+      setLikeCount(res.likes_count);
+      setIsLiked(res.is_liked);
+    } catch (err) {
+      console.error("Error toggling like:", err);
+    } finally {
+      setIsLikeLoading(false);
     }
-
-    // Save updated liked posts to localStorage
-    saveLikedPosts(likedPosts);
   };
 
   // Function to share on social media
@@ -266,9 +256,13 @@ const MemberArticleDetailPage = () => {
                 {/* LG: Shown here as part of main content */}
                 <div className="hidden lg:block pb-[60px]">
                   <ArticleCommentSection
-                    comments={mockComments}
-                    disabled={false}
-                    onRequireLogin={() => {}}
+                    comments={comments}
+                    commentValue={commentValue}
+                    onCommentChange={setCommentValue}
+                    onSendComment={handleSendComment}
+                    onDeleteComment={handleDeleteComment}
+                    currentUserId={user?.id ?? null}
+                    isSendingComment={isSendingComment}
                   />
                 </div>
               </div>
@@ -305,9 +299,13 @@ const MemberArticleDetailPage = () => {
           <div className="px-[16px] pt-[24px] pb-[40px] md:px-[40px] md:pt-[40px] md:pb-[50px]">
             <div className="w-full max-w-[800px] mx-auto">
               <ArticleCommentSection
-                comments={mockComments}
-                disabled={false}
-                onRequireLogin={() => {}}
+                comments={comments}
+                commentValue={commentValue}
+                onCommentChange={setCommentValue}
+                onSendComment={handleSendComment}
+                onDeleteComment={handleDeleteComment}
+                currentUserId={user?.id ?? null}
+                isSendingComment={isSendingComment}
               />
             </div>
           </div>

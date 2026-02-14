@@ -3,6 +3,11 @@ import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 import AdminLayout from "../../components/admin/AdminLayout";
 import BlackButton from "../../components/common/BlackButton";
+import {
+  fetchCategoryById,
+  createCategory,
+  updateCategory,
+} from "../../data/categoriesApi";
 
 /**
  * หน้าสร้าง/แก้ไขหมวดหมู่ (Admin)
@@ -16,31 +21,62 @@ const CreateCategoryPage = () => {
   const isEditMode = !!categoryId;
 
   const [categoryName, setCategoryName] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingInitial, setIsLoadingInitial] = useState(isEditMode);
 
-  // โหลดชื่อหมวดหมู่เมื่อเป็นโหมดแก้ไข (mock; TODO: เปลี่ยนเป็น API)
   useEffect(() => {
-    if (categoryId) {
-      const mockCategoryName = "Cat";
-      setCategoryName(mockCategoryName);
-    }
-  }, [categoryId]);
+    if (!categoryId) return;
+    const loadCategory = async () => {
+      setIsLoadingInitial(true);
+      try {
+        const category = await fetchCategoryById(categoryId);
+        if (category) {
+          setCategoryName(category.name);
+        } else {
+          toast.error("Category not found");
+          navigate("/admin/category");
+        }
+      } catch (err) {
+        console.error("Error loading category:", err);
+        toast.error("Failed to load category");
+        navigate("/admin/category");
+      } finally {
+        setIsLoadingInitial(false);
+      }
+    };
+    loadCategory();
+  }, [categoryId, navigate]);
 
-  const handleSave = () => {
-    // TODO: เรียก API สร้างหรืออัปเดตหมวดหมู่
-    console.log(isEditMode ? "Update category" : "Create category", {
-      categoryId,
-      categoryName,
-    });
-    const title = isEditMode ? "Update category" : "Create category";
-    const description = isEditMode
-      ? "Category has been successfully updated."
-      : "Category has been successfully created.";
-    toast.success(title, {
-      description,
-      duration: 2000,
-      className: "toast-success-custom",
-    });
-    navigate("/admin/category");
+  const handleSave = async () => {
+    const name = categoryName.trim();
+    if (!name) {
+      toast.error("Please enter a category name");
+      return;
+    }
+    setIsLoading(true);
+    try {
+      if (isEditMode && categoryId) {
+        await updateCategory(categoryId, name);
+        toast.success("Category updated", {
+          description: "Category has been successfully updated.",
+          duration: 2000,
+          className: "toast-success-custom",
+        });
+      } else {
+        await createCategory(name);
+        toast.success("Category created", {
+          description: "Category has been successfully created.",
+          duration: 2000,
+          className: "toast-success-custom",
+        });
+      }
+      navigate("/admin/category");
+    } catch (err) {
+      console.error("Error saving category:", err);
+      toast.error("Failed to save category");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -54,25 +90,33 @@ const CreateCategoryPage = () => {
             type="button"
             className="h-[44px] w-[120px] px-[24px] flex items-center justify-center"
             onClick={handleSave}
+            disabled={isLoading || isLoadingInitial}
           >
-            Save
+            {isLoading ? "Saving..." : "Save"}
           </BlackButton>
         </header>
 
         <article className="pt-[32px]">
-          <section className="mb-[32px]">
-            <label htmlFor="category-name" className="block text-body-2 text-[#2D2D2D] mb-[12px]">
-              Category name
-            </label>
-            <input
-              id="category-name"
-              type="text"
-              value={categoryName}
-              onChange={(e) => setCategoryName(e.target.value)}
-              placeholder="Category name"
-              className="w-[360px] h-[44px] px-[16px] bg-white border border-gray-300 rounded-[8px] text-body-1 text-brown-600 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-red focus:border-brand-red"
-            />
-          </section>
+          {isEditMode && isLoadingInitial ? (
+            <p className="text-body-1 text-gray-500">Loading...</p>
+          ) : (
+            <section className="mb-[32px]">
+              <label
+                htmlFor="category-name"
+                className="block text-body-2 text-[#2D2D2D] mb-[12px]"
+              >
+                Category name
+              </label>
+              <input
+                id="category-name"
+                type="text"
+                value={categoryName}
+                onChange={(e) => setCategoryName(e.target.value)}
+                placeholder="Category name"
+                className="w-[360px] h-[44px] px-[16px] bg-white border border-gray-300 rounded-[8px] text-body-1 text-brown-600 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-red focus:border-brand-red"
+              />
+            </section>
+          )}
         </article>
       </section>
     </AdminLayout>
@@ -80,4 +124,3 @@ const CreateCategoryPage = () => {
 };
 
 export default CreateCategoryPage;
-

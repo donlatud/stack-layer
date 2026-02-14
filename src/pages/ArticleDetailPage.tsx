@@ -4,6 +4,8 @@ import NavBar from "../components/layout/NavBar";
 import Footer from "../components/layout/Footer";
 import { useAuth } from "../contexts/AuthContext";
 import { fetchPostById } from "../data/blogPosts";
+import { fetchComments } from "../data/commentsApi";
+import type { CommentItem } from "../data/commentsApi";
 import type { BlogPost } from "../types/blog";
 import ArticleHeader from "../components/Article/detail/ArticleHeader";
 import ArticleMeta from "../components/Article/detail/ArticleMeta";
@@ -23,6 +25,7 @@ const ArticleDetailPage = () => {
   const { postId } = useParams<{ postId: string }>();
   const navigate = useNavigate();
   const [article, setArticle] = useState<BlogPost | null>(null);
+  const [comments, setComments] = useState<CommentItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isLoginDialogOpen, setIsLoginDialogOpen] = useState(false);
@@ -69,30 +72,18 @@ const ArticleDetailPage = () => {
     loadArticle();
   }, [postId, navigate]);
 
-  // Mock comments data
-  const mockComments = [
-    {
-      avatar: "https://i.pravatar.cc/150?img=1",
-      name: "Jacob Lash",
-      date: "12 September 2024 at 18:30",
-      content:
-        "I loved this article! It really explains why my cat is so independent yet loving. The purring section was super interesting.",
-    },
-    {
-      avatar: "https://i.pravatar.cc/150?img=2",
-      name: "Ahri",
-      date: "12 September 2024 at 18:30",
-      content:
-        "Such a great read! I've always wondered why my cat slow blinks at me—now I know it's her way of showing trust!",
-    },
-    {
-      avatar: "https://i.pravatar.cc/150?img=3",
-      name: "Mimi mama",
-      date: "12 September 2024 at 18:30",
-      content:
-        "This article perfectly captures why cats make such amazing pets. I had no idea their purring could help with healing. Fascinating stuff!",
-    },
-  ];
+  useEffect(() => {
+    if (!postId) return;
+    const loadComments = async () => {
+      try {
+        const list = await fetchComments(postId);
+        setComments(list);
+      } catch (err) {
+        console.error("Error loading comments:", err);
+      }
+    };
+    loadComments();
+  }, [postId]);
 
   const handleCopyLink = async () => {
     await copyLinkToClipboard(window.location.href);
@@ -223,7 +214,7 @@ const ArticleDetailPage = () => {
                 {/* LG: Shown here as part of main content */}
                 <div className="hidden lg:block pb-[60px]">
                   <ArticleCommentSection
-                    comments={mockComments}
+                    comments={comments}
                     disabled={!isLoggedIn}
                     onRequireLogin={requireLogin}
                   />
@@ -263,7 +254,7 @@ const ArticleDetailPage = () => {
           <div className="px-[16px] pt-[24px] pb-[40px] md:px-[40px] md:pt-[40px] md:pb-[50px]">
             <div className="w-full max-w-[800px] mx-auto">
               <ArticleCommentSection
-                comments={mockComments}
+                comments={comments}
                 disabled={!isLoggedIn}
                 onRequireLogin={requireLogin}
               />
