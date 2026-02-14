@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext";
 import AuthPageLayout from "../components/auth/AuthPageLayout";
 import AuthFormCard from "../components/auth/AuthFormCard";
 import FormInput from "../components/auth/FormInput";
@@ -15,9 +16,12 @@ interface FormErrors {
 
 /**
  * หน้าสมัครสมาชิก: ชื่อ, username, อีเมล, รหัสผ่าน
+ * ถ้าล็อกอินแล้ว → redirect ไป /member
  * มี validation; ส่งต่อไป signup service แล้วไป /registration-success
  */
 const SignupPage = () => {
+  const { isAuthenticated, isLoading } = useAuth();
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     name: "",
     username: "",
@@ -26,7 +30,12 @@ const SignupPage = () => {
   });
   const [errors, setErrors] = useState<FormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!isLoading && isAuthenticated) {
+      navigate("/member", { replace: true });
+    }
+  }, [isAuthenticated, isLoading, navigate]);
 
   const validateForm = (): boolean => {
     const e: FormErrors = {};
@@ -60,10 +69,10 @@ const SignupPage = () => {
     try {
       const result = await signup(formData);
       if (result.success && result.user) {
-        navigate("/registration-success", { state: { user: result.user } });
+        navigate("/registration-success");
         return;
       }
-      if (result.message?.includes("already taken")) {
+      if (result.message) {
         setErrors((prev) => ({ ...prev, email: result.message }));
       }
     } catch (err) {
@@ -73,6 +82,10 @@ const SignupPage = () => {
       setIsSubmitting(false);
     }
   };
+
+  if (isLoading || isAuthenticated) {
+    return null;
+  }
 
   return (
     <AuthPageLayout>

@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 import { useAuth } from "../contexts/AuthContext";
+import { resetPassword as resetPasswordApi } from "../services/authService";
 import MemberNavBar from "../components/layout/MemberNavBar";
 import { User, Lock, X } from "lucide-react";
 import BlackButton from "../components/common/BlackButton";
@@ -11,7 +13,7 @@ import PasswordInput from "../components/common/PasswordInput";
  * ต้องล็อกอิน
  */
 const ResetPasswordPage = () => {
-  const { isAuthenticated, user } = useAuth();
+  const { isAuthenticated, isLoading, user } = useAuth();
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     currentPassword: "",
@@ -24,14 +26,15 @@ const ResetPasswordPage = () => {
     confirmPassword?: string;
   }>({});
   const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
-    if (!isAuthenticated) {
+    if (!isLoading && !isAuthenticated) {
       navigate("/login");
     }
-  }, [isAuthenticated, navigate]);
+  }, [isAuthenticated, isLoading, navigate]);
 
-  if (!isAuthenticated) {
+  if (isLoading || !isAuthenticated) {
     return null;
   }
 
@@ -81,21 +84,40 @@ const ResetPasswordPage = () => {
     if (window.innerWidth >= 1024) {
       setShowConfirmModal(true);
     } else {
-      // For mobile, proceed directly
       performPasswordReset();
     }
   };
 
-  const performPasswordReset = () => {
-    // TODO: Implement password reset functionality
-    console.log("Resetting password");
+  const performPasswordReset = async () => {
+    if (isSubmitting) return;
+    setIsSubmitting(true);
     setShowConfirmModal(false);
-    // Reset form
-    setFormData({
-      currentPassword: "",
-      newPassword: "",
-      confirmPassword: "",
+
+    const result = await resetPasswordApi({
+      oldPassword: formData.currentPassword,
+      newPassword: formData.newPassword,
     });
+
+    setIsSubmitting(false);
+
+    if (result.success) {
+      toast.success("Password updated successfully", {
+        className: "toast-success-custom",
+      });
+      setFormData({
+        currentPassword: "",
+        newPassword: "",
+        confirmPassword: "",
+      });
+    } else {
+      toast.error(result.message ?? "Failed to reset password", {
+        className: "toast-error-custom",
+      });
+      setErrors((prev) => ({
+        ...prev,
+        currentPassword: result.message ?? "Failed to reset password",
+      }));
+    }
   };
 
   const handleCancelReset = () => {
@@ -238,8 +260,9 @@ const ResetPasswordPage = () => {
               <BlackButton
                 onClick={handleResetPassword}
                 className="h-[48px] min-w-[208px]"
+                disabled={isSubmitting}
               >
-                Reset password
+                {isSubmitting ? "Resetting..." : "Reset password"}
               </BlackButton>
             </div>
           </section>
@@ -371,8 +394,9 @@ const ResetPasswordPage = () => {
                     <BlackButton
                       onClick={handleResetPassword}
                       className="h-[44px] min-w-[180px]"
+                      disabled={isSubmitting}
                     >
-                      Reset password
+                      {isSubmitting ? "Resetting..." : "Reset password"}
                     </BlackButton>
                   </div>
                 </div>
@@ -418,15 +442,17 @@ const ResetPasswordPage = () => {
               <div className="flex gap-[12px] justify-center">
                 <button
                   onClick={handleCancelReset}
-                  className="h-[48px] w-[138px] px-[24px] rounded-[999px] bg-white border border-brown-300 text-brown-600 text-body-1 font-medium hover:bg-brown-50 transition-colors"
+                  className="h-[48px] w-[138px] px-[24px] rounded-[999px] bg-white border border-brown-300 text-brown-600 text-body-1 font-medium hover:bg-brown-50 transition-colors disabled:opacity-50"
+                  disabled={isSubmitting}
                 >
                   Cancel
                 </button>
                 <BlackButton
                   onClick={performPasswordReset}
                   className="h-[48px] w-[138px] px-[24px] rounded-[999px]"
+                  disabled={isSubmitting}
                 >
-                  Reset
+                  {isSubmitting ? "Resetting..." : "Reset"}
                 </BlackButton>
               </div>
             </div>

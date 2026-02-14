@@ -3,9 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import MemberNavBar from "../components/layout/MemberNavBar";
 import Footer from "../components/layout/Footer";
-import { fetchBlogPosts } from "../data/blogPosts";
-import { buildApiParams } from "../utils/blogUtils";
-import { DEFAULT_PAGE } from "../constants/pagination";
+import { fetchPostById } from "../data/blogPosts";
 import type { BlogPost } from "../types/blog";
 import ArticleHeader from "../components/Article/detail/ArticleHeader";
 import ArticleMeta from "../components/Article/detail/ArticleMeta";
@@ -22,7 +20,7 @@ import { copyLinkToClipboard } from "../utils/clipboardUtils";
 const MemberArticleDetailPage = () => {
   const { postId } = useParams<{ postId: string }>();
   const navigate = useNavigate();
-  const { isAuthenticated, user } = useAuth();
+  const { isAuthenticated, isLoading: isAuthLoading, user } = useAuth();
   const [article, setArticle] = useState<BlogPost | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -51,12 +49,11 @@ const MemberArticleDetailPage = () => {
   };
 
   useEffect(() => {
-    // Redirect to home page if not authenticated
-    if (!isAuthenticated) {
+    if (!isAuthLoading && !isAuthenticated) {
       navigate("/", { replace: true });
       return;
     }
-  }, [isAuthenticated, navigate]);
+  }, [isAuthenticated, isAuthLoading, navigate]);
 
   useEffect(() => {
     const loadArticle = async () => {
@@ -77,32 +74,7 @@ const MemberArticleDetailPage = () => {
       }
 
       try {
-        let currentPage = DEFAULT_PAGE;
-        let foundArticle: BlogPost | null = null;
-        let hasMorePages = true;
-
-        // Search through all pages until we find the article
-        while (hasMorePages && !foundArticle) {
-          const params = buildApiParams(currentPage, "Highlight");
-          const response = await fetchBlogPosts(params);
-
-          // Check if article exists in current page
-          foundArticle =
-            response.posts.find((post) => post.id === targetId) || null;
-
-          if (foundArticle) {
-            break;
-          }
-
-          // Check if there are more pages to search
-          hasMorePages =
-            response.nextPage !== null &&
-            response.currentPage < response.totalPages;
-
-          if (hasMorePages) {
-            currentPage = response.nextPage!;
-          }
-        }
+        const foundArticle = await fetchPostById(postId);
 
         if (!foundArticle) {
           setError("Article not found");
@@ -111,11 +83,9 @@ const MemberArticleDetailPage = () => {
         }
 
         setArticle(foundArticle);
-        // Initialize like count from article
         const initialLikeCount = foundArticle.likes || 0;
         setLikeCount(initialLikeCount);
 
-        // Check if user has already liked this post
         const likedPosts = getLikedPosts();
         const userHasLiked = likedPosts.has(targetId);
         setIsLiked(userHasLiked);
@@ -212,7 +182,7 @@ const MemberArticleDetailPage = () => {
   };
 
   // Don't render if not authenticated (will redirect)
-  if (!isAuthenticated) {
+  if (isAuthLoading || !isAuthenticated) {
     return null;
   }
 

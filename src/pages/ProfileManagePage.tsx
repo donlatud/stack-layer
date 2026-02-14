@@ -10,7 +10,7 @@ import BlackButton from "../components/common/BlackButton";
  * ต้องล็อกอิน; ยังไม่ล็อกอินจะ redirect ไป /login
  */
 const ProfileManagePage = () => {
-  const { isAuthenticated, user, updateUser } = useAuth();
+  const { isAuthenticated, isLoading, user, updateUser } = useAuth();
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     name: user?.name || "",
@@ -21,10 +21,10 @@ const ProfileManagePage = () => {
   const [showSuccessNotification, setShowSuccessNotification] = useState(false);
 
   useEffect(() => {
-    if (!isAuthenticated) {
+    if (!isLoading && !isAuthenticated) {
       navigate("/login");
     }
-  }, [isAuthenticated, navigate]);
+  }, [isAuthenticated, isLoading, navigate]);
 
   useEffect(() => {
     if (user) {
@@ -37,7 +37,7 @@ const ProfileManagePage = () => {
     }
   }, [user]);
 
-  if (!isAuthenticated) {
+  if (isLoading || !isAuthenticated) {
     return null;
   }
 

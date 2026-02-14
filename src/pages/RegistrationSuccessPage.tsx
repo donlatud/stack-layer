@@ -1,19 +1,14 @@
-import { useNavigate, useLocation } from "react-router-dom";
-import { useAuth } from "../contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
 import AuthPageLayout from "../components/auth/AuthPageLayout";
 import AuthFormCard from "../components/auth/AuthFormCard";
 import BlackButton from "../components/common/BlackButton";
 
 /**
- * หน้าหลังสมัครสำเร็จ: ไอคอน, ข้อความ, ปุ่มไปหน้าแรก; รับ user จาก location.state
+ * หน้าหลังสมัครสำเร็จ: ไอคอน, ข้อความ, ปุ่มไปหน้า Login
+ * หลังสมัครเสร็จต้องล็อกอินเพื่อเข้าสู่ระบบ
  */
 const RegistrationSuccessPage = () => {
   const navigate = useNavigate();
-  const location = useLocation();
-  const { login: authLogin } = useAuth();
-  
-  // Get user data from location state (passed from SignupPage)
-  const user = location.state?.user;
 
   return (
     <AuthPageLayout>
@@ -43,20 +38,10 @@ const RegistrationSuccessPage = () => {
             Registration success
           </h2>
           
-          {/* Continue Button */}
+          {/* Continue Button - Navigate to login to get token */}
           <div className="mt-[8px]">
             <BlackButton
-              onClick={() => {
-                if (user) {
-                  // Set user in auth context
-                  authLogin(user);
-                  // Navigate to member home page
-                  navigate("/member");
-                } else {
-                  // Fallback to login if no user data
-                  navigate("/login");
-                }
-              }}
+              onClick={() => navigate("/login")}
               className="w-[141px] h-[48px]"
             >
               Continue

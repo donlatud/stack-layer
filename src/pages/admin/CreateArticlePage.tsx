@@ -6,8 +6,17 @@ import { Upload, X, Trash2 } from "lucide-react";
 import BlackButton from "../../components/common/BlackButton";
 import { Button } from "../../components/ui/button";
 import { cn } from "../../lib/utils";
+import { fetchPostById } from "../../data/blogPosts";
+import {
+  createPost,
+  updatePost,
+  toCreatePostBody,
+  PLACEHOLDER_IMAGE,
+} from "../../data/postsApi";
 
 const MAX_INTRODUCTION_LENGTH = 120;
+const STATUS_PUBLISHED = 1;
+const STATUS_DRAFT = 2;
 
 /**
  * หน้าสร้าง/แก้ไขบทความ (Admin)
@@ -23,6 +32,7 @@ const CreateArticlePage = () => {
 
   const [thumbnailImage, setThumbnailImage] = useState<File | null>(null);
   const [thumbnailPreview, setThumbnailPreview] = useState<string>("");
+  const [imageUrl, setImageUrl] = useState<string>("");
   const [category, setCategory] = useState("");
   const [authorName] = useState("Thompson P."); // คงที่ โหมดอ่านอย่างเดียว
   const [title, setTitle] = useState("");
@@ -32,24 +42,23 @@ const CreateArticlePage = () => {
   // โหลดข้อมูลบทความเมื่อเป็นโหมดแก้ไข
   useEffect(() => {
     if (articleId) {
-      // TODO: Replace with actual API call
-      // For now, using mock data
-      const mockArticle = {
-        id: articleId,
-        title: "The Fascinating World of Cats: Why We Love Our Furry Friends",
-        category: "cat",
-        authorName: "Thompson P.",
-        introduction: "Cats have captivated human hearts for thousands of years. Whether lounging in a sunny spot or playfully chasing a string, these furry companions bring warmth and joy to millions of homes.",
-        content: "##1. Independent, Yet Affectionate\n\nCats are known for their independent nature...",
-        thumbnailUrl: "",
+      const loadArticle = async () => {
+        try {
+          const article = await fetchPostById(articleId);
+          if (article) {
+            setTitle(article.title);
+            setCategory(article.category.toLowerCase());
+            setIntroduction(article.description);
+            setContent(article.content);
+            setImageUrl(article.image);
+            setThumbnailPreview(article.image);
+          }
+        } catch (err) {
+          console.error("Error loading article:", err);
+          toast.error("Failed to load article");
+        }
       };
-      setTitle(mockArticle.title);
-      setCategory(mockArticle.category);
-      setIntroduction(mockArticle.introduction);
-      setContent(mockArticle.content);
-      if (mockArticle.thumbnailUrl) {
-        setThumbnailPreview(mockArticle.thumbnailUrl);
-      }
+      loadArticle();
     }
   }, [articleId]);
 
@@ -70,42 +79,82 @@ const CreateArticlePage = () => {
     setThumbnailPreview("");
   };
 
-  const handleSaveAsDraft = () => {
-    // TODO: เรียก API บันทึกเป็น Draft
-    console.log("Save as draft", {
-      thumbnailImage,
-      category,
-      authorName,
-      title,
-      introduction,
-      content,
-      status: "draft",
-    });
-    toast.success("Create article and saved as draft", {
-      description: "You can publish article later",
-      duration: 2000,
-      className: "toast-success-custom",
-    });
-    navigate("/admin/article");
+  const getEffectiveImageUrl = (): string => {
+    if (imageUrl.trim()) return imageUrl.trim();
+    if (thumbnailPreview.startsWith("http")) return thumbnailPreview;
+    return PLACEHOLDER_IMAGE;
   };
 
-  const handleSaveAndPublish = () => {
-    // TODO: เรียก API บันทึกและเผยแพร่
-    console.log("Save and publish", {
-      thumbnailImage,
-      category,
-      authorName,
-      title,
-      introduction,
-      content,
-      status: "published",
-    });
-    toast.success("Create article and published", {
-      description: "Your article has been successfully published",
-      duration: 2000,
-      className: "toast-success-custom",
-    });
-    navigate("/admin/article");
+  const handleSaveAsDraft = async () => {
+    if (!category) {
+      toast.error("Please select a category");
+      return;
+    }
+    if (!title.trim()) {
+      toast.error("Please enter a title");
+      return;
+    }
+    try {
+      const body = toCreatePostBody(
+        title.trim(),
+        getEffectiveImageUrl(),
+        category,
+        introduction.trim(),
+        content.trim(),
+        STATUS_DRAFT
+      );
+      if (isEditMode && articleId) {
+        await updatePost(articleId, body);
+        toast.success("Article saved as draft");
+      } else {
+        await createPost(body);
+        toast.success("Create article and saved as draft", {
+          description: "You can publish article later",
+          duration: 2000,
+          className: "toast-success-custom",
+        });
+      }
+      navigate("/admin/article");
+    } catch (err) {
+      console.error("Error saving article:", err);
+      toast.error("Failed to save article");
+    }
+  };
+
+  const handleSaveAndPublish = async () => {
+    if (!category) {
+      toast.error("Please select a category");
+      return;
+    }
+    if (!title.trim()) {
+      toast.error("Please enter a title");
+      return;
+    }
+    try {
+      const body = toCreatePostBody(
+        title.trim(),
+        getEffectiveImageUrl(),
+        category,
+        introduction.trim(),
+        content.trim(),
+        STATUS_PUBLISHED
+      );
+      if (isEditMode && articleId) {
+        await updatePost(articleId, body);
+        toast.success("Article updated and published");
+      } else {
+        await createPost(body);
+        toast.success("Create article and published", {
+          description: "Your article has been successfully published",
+          duration: 2000,
+          className: "toast-success-custom",
+        });
+      }
+      navigate("/admin/article");
+    } catch (err) {
+      console.error("Error saving article:", err);
+      toast.error("Failed to save article");
+    }
   };
 
   const handleDelete = () => navigate(`/admin/article/${articleId}/delete`);
@@ -166,7 +215,7 @@ const CreateArticlePage = () => {
                   <Upload className="w-[32px] h-[32px] text-gray-400" />
                 )}
               </div>
-              <div className="flex-1">
+              <div className="flex-1 flex flex-col gap-[12px]">
                 <input
                   id="thumbnail-image"
                   type="file"
@@ -184,6 +233,24 @@ const CreateArticlePage = () => {
                     <span>Upload thumbnail image</span>
                   </Button>
                 </label>
+                <div>
+                  <label htmlFor="image-url" className="block text-body-3 text-gray-600 mb-[4px]">
+                    Or paste image URL (required for API)
+                  </label>
+                  <input
+                    id="image-url"
+                    type="url"
+                    value={imageUrl}
+                    onChange={(e) => {
+                      setImageUrl(e.target.value);
+                      if (e.target.value && e.target.value.startsWith("http")) {
+                        setThumbnailPreview(e.target.value);
+                      }
+                    }}
+                    placeholder="https://..."
+                    className="w-full h-[40px] px-[12px] bg-white border border-gray-300 rounded-[8px] text-body-2 text-brown-600 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-red focus:border-brand-red"
+                  />
+                </div>
               </div>
             </div>
           </section>

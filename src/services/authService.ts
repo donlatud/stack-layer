@@ -1,4 +1,8 @@
-// TODO: เปลี่ยนไปใช้ axios หรือ fetch จริงเมื่อมี API
+import axios from "axios";
+import { apiClient } from "../lib/apiClient";
+
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL || "http://localhost:4000";
 
 interface SignupData {
   name: string;
@@ -22,63 +26,63 @@ interface User {
   name: string;
   email: string;
   avatar?: string;
+  username?: string;
+  id?: string;
+  role?: string;
 }
 
 interface LoginResponse {
   success: boolean;
   message?: string;
   user?: User;
+  access_token?: string;
 }
 
-/**
- * Check if email is already taken
- * @param email - Email to check
- * @returns Promise<boolean> - true if email is taken, false otherwise
- */
-export const checkEmailExists = async (email: string): Promise<boolean> => {
-  try {
-    // TODO: Replace with actual API endpoint
-    // For now, using mock data - emails that are already taken
-    const takenEmails = ["moodeng.cute@gmail.com", "test@example.com"];
-    
-    // Simulate API call delay
-    await new Promise((resolve) => setTimeout(resolve, 500));
-    
-    return takenEmails.includes(email.toLowerCase());
-  } catch (error) {
-    console.error("Error checking email:", error);
-    return false;
-  }
-};
+const mapApiUserToUser = (apiUser: {
+  name?: string;
+  email?: string;
+  profilePic?: string;
+  username?: string;
+  id?: string;
+  role?: string;
+}): User => ({
+  name: apiUser.name ?? "",
+  email: apiUser.email ?? "",
+  avatar: apiUser.profilePic,
+  username: apiUser.username,
+  id: apiUser.id,
+  role: apiUser.role,
+});
 
-/** สมัครสมาชิก; ตรวจอีเมลซ้ำก่อน (mock อยู่) */
+/** สมัครสมาชิก; เรียก POST /auth/register */
 export const signup = async (data: SignupData): Promise<SignupResponse> => {
   try {
-    // TODO: Replace with actual API endpoint
-    // For now, this is a mock implementation
-    const emailExists = await checkEmailExists(data.email);
-    
-    if (emailExists) {
+    const response = await axios.post(`${API_BASE_URL}/auth/register`, {
+      email: data.email,
+      password: data.password,
+      username: data.username,
+      name: data.name,
+    });
+
+    if (response.status === 201 && response.data.user) {
+      const apiUser = response.data.user;
       return {
-        success: false,
-        message: "Email is already taken, Please try another email.",
+        success: true,
+        user: mapApiUserToUser({ ...apiUser, email: data.email }),
       };
     }
-    
-    // Simulate API call delay
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    
-    // TODO: Replace with actual API call
-    // await axios.post("/api/auth/signup", data);
-    
+
     return {
-      success: true,
-      user: {
-        name: data.name,
-        email: data.email,
-      },
+      success: false,
+      message: "An error occurred during registration. Please try again.",
     };
   } catch (error) {
+    if (axios.isAxiosError(error) && error.response?.data?.error) {
+      return {
+        success: false,
+        message: error.response.data.error,
+      };
+    }
     console.error("Error during signup:", error);
     return {
       success: false,
@@ -87,47 +91,101 @@ export const signup = async (data: SignupData): Promise<SignupResponse> => {
   }
 };
 
-/** ล็อกอิน; ตรวจกับ mock credentials (moodeng@gmail.com / 123456) */
+/** ล็อกอิน; เรียก POST /auth/login แล้ว GET /auth/get-user เพื่อโหลด profile */
 export const login = async (data: LoginData): Promise<LoginResponse> => {
   try {
-    // TODO: Replace with actual API endpoint
-    // For now, this is a mock implementation
-    
-    // Simulate API call delay
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    
-    // TODO: Replace with actual API call
-    // await axios.post("/api/auth/login", data);
-    
-    // Mock validation - for demo purposes
-    // In real app, this would be handled by the backend
-    const validCredentials = {
-      email: "moodeng@gmail.com",
-      password: "123456",
-    };
-    
-    if (
-      data.email.toLowerCase() === validCredentials.email &&
-      data.password === validCredentials.password
-    ) {
-      return {
-        success: true,
-        user: {
-          name: "Moodeng ja",
-          email: data.email,
-        },
-      };
-    } else {
+    const loginRes = await axios.post(`${API_BASE_URL}/auth/login`, {
+      email: data.email,
+      password: data.password,
+    });
+
+    if (loginRes.status !== 200 || !loginRes.data.access_token) {
       return {
         success: false,
-        message: "Invalid email or password",
+        message: loginRes.data?.error ?? "Invalid email or password",
       };
     }
+
+    const accessToken = loginRes.data.access_token;
+
+    const userRes = await axios.get(`${API_BASE_URL}/auth/get-user`, {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+
+    if (userRes.status !== 200 || !userRes.data) {
+      return {
+        success: false,
+        message: "Failed to load user profile",
+      };
+    }
+
+    const apiUser = userRes.data;
+    const user = mapApiUserToUser(apiUser);
+
+    return {
+      success: true,
+      user,
+      access_token: accessToken,
+    };
   } catch (error) {
+    if (axios.isAxiosError(error) && error.response?.data?.error) {
+      return {
+        success: false,
+        message: error.response.data.error,
+      };
+    }
     console.error("Error during login:", error);
     return {
       success: false,
       message: "An error occurred during login. Please try again.",
+    };
+  }
+};
+
+/** โหลด user ปัจจุบันจาก server ด้วย token ใน localStorage (ใช้ตอน refresh) */
+export const getCurrentUser = async (): Promise<User | null> => {
+  try {
+    const response = await apiClient.get("/auth/get-user");
+    if (response.status === 200 && response.data) {
+      return mapApiUserToUser(response.data);
+    }
+    return null;
+  } catch {
+    return null;
+  }
+};
+
+interface ResetPasswordData {
+  oldPassword: string;
+  newPassword: string;
+}
+
+interface ResetPasswordResponse {
+  success: boolean;
+  message?: string;
+}
+
+/** เปลี่ยนรหัสผ่าน; เรียก PUT /auth/reset-password (ใช้ token จาก apiClient) */
+export const resetPassword = async (
+  data: ResetPasswordData
+): Promise<ResetPasswordResponse> => {
+  try {
+    await apiClient.put("/auth/reset-password", {
+      oldPassword: data.oldPassword,
+      newPassword: data.newPassword,
+    });
+    return { success: true };
+  } catch (error) {
+    if (axios.isAxiosError(error) && error.response?.data?.error) {
+      return {
+        success: false,
+        message: error.response.data.error,
+      };
+    }
+    console.error("Error during reset password:", error);
+    return {
+      success: false,
+      message: "An error occurred. Please try again.",
     };
   }
 };

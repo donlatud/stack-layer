@@ -3,9 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import NavBar from "../components/layout/NavBar";
 import Footer from "../components/layout/Footer";
 import { useAuth } from "../contexts/AuthContext";
-import { fetchBlogPosts } from "../data/blogPosts";
-import { buildApiParams } from "../utils/blogUtils";
-import { DEFAULT_PAGE } from "../constants/pagination";
+import { fetchPostById } from "../data/blogPosts";
 import type { BlogPost } from "../types/blog";
 import ArticleHeader from "../components/Article/detail/ArticleHeader";
 import ArticleMeta from "../components/Article/detail/ArticleMeta";
@@ -18,7 +16,7 @@ import { copyLinkToClipboard } from "../utils/clipboardUtils";
 
 /**
  * หน้ารายละเอียดบทความ (path /post/:postId)
- * ดึงบทความจาก ID; ถ้ายังไม่เจอจะข้ามไปหน้าถัดไปจนกว่าจะเจอหรือหมด
+ * ดึงบทความจาก GET /posts/:postId
  * ถ้าล็อกอินแล้วจะ redirect ไป /member/post/:postId
  */
 const ArticleDetailPage = () => {
@@ -28,15 +26,15 @@ const ArticleDetailPage = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isLoginDialogOpen, setIsLoginDialogOpen] = useState(false);
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, isLoading: isAuthLoading } = useAuth();
   const isLoggedIn = isAuthenticated;
 
   // ล็อกอินอยู่แล้ว → ไปหน้ารายละเอียดของ member แทน
   useEffect(() => {
-    if (isAuthenticated && postId) {
+    if (!isAuthLoading && isAuthenticated && postId) {
       navigate(`/member/post/${postId}`, { replace: true });
     }
-  }, [isAuthenticated, postId, navigate]);
+  }, [isAuthenticated, isAuthLoading, postId, navigate]);
 
   useEffect(() => {
     const loadArticle = async () => {
@@ -49,40 +47,8 @@ const ArticleDetailPage = () => {
         return;
       }
 
-      const targetId = parseInt(postId, 10);
-      if (isNaN(targetId)) {
-        setError("Invalid article ID");
-        setIsLoading(false);
-        return;
-      }
-
       try {
-        let currentPage = DEFAULT_PAGE;
-        let foundArticle: BlogPost | null = null;
-        let hasMorePages = true;
-
-        // Search through all pages until we find the article
-        while (hasMorePages && !foundArticle) {
-          const params = buildApiParams(currentPage, "Highlight");
-          const response = await fetchBlogPosts(params);
-
-          // Check if article exists in current page
-          foundArticle =
-            response.posts.find((post) => post.id === targetId) || null;
-
-          if (foundArticle) {
-            break;
-          }
-
-          // Check if there are more pages to search
-          hasMorePages =
-            response.nextPage !== null &&
-            response.currentPage < response.totalPages;
-
-          if (hasMorePages) {
-            currentPage = response.nextPage!;
-          }
-        }
+        const foundArticle = await fetchPostById(postId);
 
         if (!foundArticle) {
           setError("Article not found");
@@ -187,7 +153,7 @@ const ArticleDetailPage = () => {
 
 
   // Don't render if authenticated (will redirect to member version)
-  if (isAuthenticated) {
+  if (!isAuthLoading && isAuthenticated) {
     return null;
   }
 

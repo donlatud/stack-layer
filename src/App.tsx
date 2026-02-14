@@ -8,6 +8,7 @@ import MemberArticleDetailPage from "./pages/MemberArticleDetailPage";
 import NotFoundPage from "./pages/NotFoundPage";
 import SignupPage from "./pages/SignupPage";
 import LoginPage from "./pages/LoginPage";
+import AdminRouteGuard from "./components/admin/AdminRouteGuard";
 import AdminLoginPage from "./pages/admin/AdminLoginPage";
 import AdminArticlePage from "./pages/admin/AdminArticlePage";
 import CreateArticlePage from "./pages/admin/CreateArticlePage";
@@ -47,18 +48,18 @@ function App() {
           <Route path="/member/reset-password" element={<ResetPasswordPage />} />
 
           <Route path="/admin/login" element={<AdminLoginPage />} />
-          <Route path="/admin/article" element={<AdminArticlePage />} />
-          <Route path="/admin/article/create" element={<CreateArticlePage />} />
-          <Route path="/admin/article/:articleId/edit" element={<CreateArticlePage />} />
-          <Route path="/admin/article/:articleId/delete" element={<CheckDeleteArticlePage />} />
-          <Route path="/admin/category" element={<AdminCategoryPage />} />
-          <Route path="/admin/category/create" element={<CreateCategoryPage />} />
-          <Route path="/admin/category/:categoryId/edit" element={<CreateCategoryPage />} />
-          <Route path="/admin/category/:categoryId/delete" element={<CheckDeleteCategoryPage />} />
-          <Route path="/admin/profile" element={<AdminProfilePage />} />
-          <Route path="/admin/notification" element={<AdminNotificationPage />} />
-          <Route path="/admin/reset-password" element={<AdminResetPasswordPage />} />
-          <Route path="/admin/reset-password/check" element={<CheckResetPasswordPage />} />
+          <Route path="/admin/article" element={<AdminRouteGuard><AdminArticlePage /></AdminRouteGuard>} />
+          <Route path="/admin/article/create" element={<AdminRouteGuard><CreateArticlePage /></AdminRouteGuard>} />
+          <Route path="/admin/article/:articleId/edit" element={<AdminRouteGuard><CreateArticlePage /></AdminRouteGuard>} />
+          <Route path="/admin/article/:articleId/delete" element={<AdminRouteGuard><CheckDeleteArticlePage /></AdminRouteGuard>} />
+          <Route path="/admin/category" element={<AdminRouteGuard><AdminCategoryPage /></AdminRouteGuard>} />
+          <Route path="/admin/category/create" element={<AdminRouteGuard><CreateCategoryPage /></AdminRouteGuard>} />
+          <Route path="/admin/category/:categoryId/edit" element={<AdminRouteGuard><CreateCategoryPage /></AdminRouteGuard>} />
+          <Route path="/admin/category/:categoryId/delete" element={<AdminRouteGuard><CheckDeleteCategoryPage /></AdminRouteGuard>} />
+          <Route path="/admin/profile" element={<AdminRouteGuard><AdminProfilePage /></AdminRouteGuard>} />
+          <Route path="/admin/notification" element={<AdminRouteGuard><AdminNotificationPage /></AdminRouteGuard>} />
+          <Route path="/admin/reset-password" element={<AdminRouteGuard><AdminResetPasswordPage /></AdminRouteGuard>} />
+          <Route path="/admin/reset-password/check" element={<AdminRouteGuard><CheckResetPasswordPage /></AdminRouteGuard>} />
 
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
