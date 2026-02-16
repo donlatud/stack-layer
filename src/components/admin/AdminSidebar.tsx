@@ -79,7 +79,7 @@ const AdminSidebar = ({ activeItem }: AdminSidebarProps) => {
           <li>
             <button
               type="button"
-              onClick={() => (window.location.href = "/")}
+              onClick={() => navigate("/member")}
               className={cn(NAV_BUTTON_BASE, "text-brown-400 hover:bg-brown-100")}
             >
               <Globe className="w-[20px] h-[20px] shrink-0" />

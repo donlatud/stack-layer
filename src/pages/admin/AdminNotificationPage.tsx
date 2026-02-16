@@ -1,28 +1,41 @@
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import AdminLayout from "../../components/admin/AdminLayout";
+import { fetchNotifications, type NotificationItem } from "../../data/notificationsApi";
 
 /**
  * หน้าการแจ้งเตือน (Admin)
- * แสดงรายการ: someone commented/liked บนบทความ, เวลา, ปุ่ม View
+ * แสดงรายการ: comments, likes, published จาก API จริง
  */
 const AdminNotificationPage = () => {
-  // TODO: แทนที่ด้วยข้อมูลจาก API
-  const notifications = [
-    {
-      id: 1,
-      userName: "Jacob Leah",
-      action: "Commented on your article",
-      articleTitle: "The fascinating world of Corgi: Why We Love Our Furry Friends",
-      comment: "I loved this article! It really explains why my soul is so independent, yet loving. The pawing smile was super interesting.",
-      timestamp: "a month ago",
-    },
-    {
-      id: 2,
-      userName: "Jacob Leah",
-      action: "liked your article",
-      articleTitle: "The Fascinating World of Corgi: Why We Love Our Furry Friends",
-      timestamp: "a month ago",
-    },
-  ];
+  const [notifications, setNotifications] = useState<NotificationItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const data = await fetchNotifications(50);
+        setNotifications(data);
+      } catch {
+        setNotifications([]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    load();
+  }, []);
+
+  const handleView = (postId: number) => {
+    navigate(`/member/post/${postId}`);
+  };
+
+  const getActionText = (n: NotificationItem) => {
+    if (n.type === "comment") return "Commented on";
+    if (n.type === "like") return "Liked your article";
+    if (n.type === "published") return "Published new article";
+    return n.action;
+  };
 
   return (
     <AdminLayout activeItem="notification">
@@ -36,43 +49,62 @@ const AdminNotificationPage = () => {
 
         {/* Notification List */}
         <section className="max-w-[1160px] pl-[32px] pt-[20px]">
-          {notifications.map((notification) => (
-            <article
-              key={notification.id}
-              className="py-[32px] pr-[32px] border-b border-gray-200 last:border-b-0"
-            >
-              <div className="flex items-start gap-[16px]">
-                {/* Avatar */}
-                <div className="w-[48px] h-[48px] rounded-full bg-gray-300 flex items-center justify-center shrink-0">
-                  <span className="text-body-1 text-white font-medium">
-                    {notification.userName.charAt(0)}
-                  </span>
-                </div>
+          {isLoading ? (
+            <p className="text-body-2 text-brown-500 py-[24px]">Loading...</p>
+          ) : notifications.length === 0 ? (
+            <p className="text-body-2 text-brown-500 py-[24px]">No notifications yet.</p>
+          ) : (
+            notifications.map((notification) => (
+              <article
+                key={notification.id}
+                className="py-[32px] pr-[32px] border-b border-gray-200 last:border-b-0"
+              >
+                <div className="flex items-start gap-[16px]">
+                  {/* Avatar */}
+                  <div className="w-[48px] h-[48px] rounded-full bg-brown-300 flex items-center justify-center shrink-0 overflow-hidden">
+                    {notification.userAvatar ? (
+                      <img
+                        src={notification.userAvatar}
+                        alt={notification.userName}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <span className="text-body-1 text-brown-600 font-medium">
+                        {notification.userName.charAt(0).toUpperCase()}
+                      </span>
+                    )}
+                  </div>
 
-                {/* Notification Content */}
-                <div className="flex-1 min-w-0">
-                  <p className="text-body-1 text-brown-600 mb-[4px]">
-                    <span className="font-semibold">{notification.userName}</span>{" "}
-                    <span className="font-semibold">{notification.action}</span>
-                    {": "}
-                    <span className="italic">{notification.articleTitle}</span>
-                  </p>
-                  {notification.comment && (
-                    <p className="text-body-2 text-brown-500 mb-[8px]">{notification.comment}</p>
-                  )}
-                  <p className="text-body-2 text-brand-orange">{notification.timestamp}</p>
-                </div>
+                  {/* Notification Content */}
+                  <div className="flex-1 min-w-0">
+                    <p className="text-body-1 text-brown-600 mb-[4px]">
+                      <span className="font-semibold">{notification.userName}</span>{" "}
+                      <span className="font-semibold">{getActionText(notification)}</span>
+                      {notification.articleTitle && (
+                        <>
+                          {": "}
+                          <span className="italic">{notification.articleTitle}</span>
+                        </>
+                      )}
+                    </p>
+                    {notification.comment && (
+                      <p className="text-body-2 text-brown-500 mb-[8px]">{notification.comment}</p>
+                    )}
+                    <p className="text-body-2 text-brand-orange">{notification.timestampLabel}</p>
+                  </div>
 
-                {/* View Button */}
-                <button
-                  type="button"
-                  className="ml-[16px] text-body-2 text-brown-600 underline underline-offset-4 hover:text-brand-red transition-colors shrink-0"
-                >
-                  View
-                </button>
-              </div>
-            </article>
-          ))}
+                  {/* View Button */}
+                  <button
+                    type="button"
+                    onClick={() => handleView(notification.postId)}
+                    className="ml-[16px] text-body-2 text-brown-600 underline underline-offset-4 hover:text-brand-red transition-colors shrink-0"
+                  >
+                    View
+                  </button>
+                </div>
+              </article>
+            ))
+          )}
         </section>
       </div>
     </AdminLayout>

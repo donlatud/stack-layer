@@ -1,10 +1,12 @@
-import { User, Lock, LogOut } from "lucide-react";
+import { User, Lock, LogOut, SquareArrowOutUpRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface UserDropdownMenuProps {
   onProfileClick?: () => void;
   onResetPasswordClick?: () => void;
+  onAdminPanelClick?: () => void;
   onLogoutClick?: () => void;
+  isAdmin?: boolean;
   className?: string;
 }
 
@@ -14,13 +16,15 @@ const ITEM_MOBILE = "px-[12px] py-[12px] rounded-[8px] hover:bg-brown-200";
 const ITEM_DESKTOP = "px-[16px] py-[12px] hover:bg-brown-50";
 
 /**
- * เมนู dropdown ผู้ใช้: Profile, Reset password, Log out
+ * เมนู dropdown ผู้ใช้: Profile, Reset password, [Admin panel เมื่อ role=admin], Log out
  * ใช้ทั้งใน MemberNavBar เดสก์ท็อป และเมนูมือถือ; ถ้า className มี "bg-brown-100" ถือว่าเป็นโหมดมือถือ (สไตล์ต่างกัน)
  */
 const UserDropdownMenu = ({
   onProfileClick,
   onResetPasswordClick,
+  onAdminPanelClick,
   onLogoutClick,
+  isAdmin = false,
   className = "",
 }: UserDropdownMenuProps) => {
   const isMobile = className.includes("bg-brown-100");
@@ -42,6 +46,12 @@ const UserDropdownMenu = ({
           <Lock className="w-[20px] h-[20px] text-brown-600 shrink-0" />
           <span className="text-body-1 text-brown-600">Reset password</span>
         </button>
+        {isAdmin && onAdminPanelClick && (
+          <button type="button" onClick={onAdminPanelClick} className={itemClass}>
+            <SquareArrowOutUpRight className="w-[20px] h-[20px] text-brown-600 shrink-0" />
+            <span className="text-body-1 text-brown-600">Admin panel</span>
+          </button>
+        )}
         <button type="button" onClick={onLogoutClick} className={itemClass}>
           <LogOut className="w-[20px] h-[20px] text-brown-600 shrink-0" />
           <span className="text-body-1 text-brown-600">Log out</span>

@@ -1,9 +1,14 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 import { useAuth } from "../contexts/AuthContext";
 import MemberNavBar from "../components/layout/MemberNavBar";
 import { User, Lock, X, CheckCircle } from "lucide-react";
 import BlackButton from "../components/common/BlackButton";
+import { updateProfile } from "../services/authService";
+
+const ALLOWED_AVATAR_TYPES = ["image/jpeg", "image/png", "image/gif", "image/webp"];
+const MAX_AVATAR_SIZE_BYTES = 5 * 1024 * 1024; // 5MB
 
 /**
  * หน้าโปรไฟล์สมาชิก: รูป, ชื่อ, username, อีเมล; แท็บสลับไป Reset password
@@ -18,7 +23,9 @@ const ProfileManagePage = () => {
     email: user?.email || "",
   });
   const [profileImage, setProfileImage] = useState<string | null>(user?.avatar || null);
+  const [profileFile, setProfileFile] = useState<File | null>(null);
   const [showSuccessNotification, setShowSuccessNotification] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -34,6 +41,7 @@ const ProfileManagePage = () => {
         email: user.email || "",
       });
       setProfileImage(user.avatar || null);
+      setProfileFile(null);
     }
   }, [user]);
 
@@ -51,26 +59,49 @@ const ProfileManagePage = () => {
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setProfileImage(reader.result as string);
-      };
-      reader.readAsDataURL(file);
+    if (!file) return;
+    if (!ALLOWED_AVATAR_TYPES.includes(file.type)) {
+      toast.error("Please upload a valid image (JPEG, PNG, GIF, WebP).");
+      return;
     }
+    if (file.size > MAX_AVATAR_SIZE_BYTES) {
+      toast.error("Image must be smaller than 5MB.");
+      return;
+    }
+    setProfileFile(file);
+    setProfileImage(URL.createObjectURL(file));
   };
 
-  const handleSave = () => {
-    updateUser({
-      name: formData.name,
-      avatar: profileImage || undefined,
-    });
-    setShowSuccessNotification(true);
-    
-    // Auto hide after 5 seconds
-    setTimeout(() => {
-      setShowSuccessNotification(false);
-    }, 5000);
+  const handleSave = async () => {
+    const form = new FormData();
+    form.append("name", formData.name.trim());
+    if (profileFile) {
+      form.append("avatarFile", profileFile);
+    }
+    const hasChanges = profileFile || formData.name.trim() !== (user?.name ?? "");
+    if (!hasChanges) {
+      return;
+    }
+    setIsSaving(true);
+    try {
+      const result = await updateProfile(form);
+      if (result.success && result.user) {
+        const merged = {
+          ...result.user,
+          email: user?.email ?? result.user.email ?? "",
+        };
+        updateUser(merged);
+        setProfileFile(null);
+        setShowSuccessNotification(true);
+        setTimeout(() => setShowSuccessNotification(false), 5000);
+      } else {
+        toast.error(result.message ?? "Failed to update profile");
+      }
+    } catch {
+      toast.error("Failed to update profile");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleCloseNotification = () => {
@@ -207,7 +238,7 @@ const ProfileManagePage = () => {
 
             {/* Save Button */}
             <div className="flex justify-start">
-              <BlackButton onClick={handleSave} className="h-[48px] max-w-[120px]">
+              <BlackButton onClick={handleSave} className="h-[48px] max-w-[120px] disabled:opacity-50" disabled={isSaving}>
                 Save
               </BlackButton>
             </div>
@@ -342,7 +373,7 @@ const ProfileManagePage = () => {
 
                   {/* Save Button */}
                   <div className="flex justify-start">
-                    <BlackButton onClick={handleSave} className="h-[44px] min-w-[120px]">
+                    <BlackButton onClick={handleSave} className="h-[44px] min-w-[120px] disabled:opacity-50" disabled={isSaving}>
                       Save
                     </BlackButton>
                   </div>

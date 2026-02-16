@@ -113,10 +113,9 @@ const AdminArticlePage = () => {
                 value={categoryFilter}
                 onChange={(e) => setCategoryFilter(e.target.value)}
                 className="h-[44px] w-[160px] pl-[16px] pr-[40px] bg-white border border-gray-300 rounded-[8px] text-body-1 text-brown-600 appearance-none focus:outline-none focus:ring-2 focus:ring-brand-red focus:border-brand-red"
-              >
+              > 
                 <option value="all">Category</option>
                 <option value="cat">Cat</option>
-                <option value="dog">Dog</option>
                 <option value="general">General</option>
                 <option value="inspiration">Inspiration</option>
               </select>

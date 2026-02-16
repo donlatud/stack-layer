@@ -1,10 +1,13 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import hhLogo from "../../assets/hh-logo.svg";
 import hamburgerMenu from "../../assets/hamburger-bar.svg";
 import { Bell, ChevronDown } from "lucide-react";
 import UserDropdownMenu from "./UserDropdownMenu";
+import NotificationDropdown from "./NotificationDropdown";
+import { fetchNotifications } from "../../data/notificationsApi";
+import type { NotificationItem } from "../../data/notificationsApi";
 import { cn } from "@/lib/utils";
 
 /**
@@ -16,10 +19,38 @@ const MemberNavBar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isNotificationOpen, setIsNotificationOpen] = useState(false);
+  const [notifications, setNotifications] = useState<NotificationItem[]>([]);
+  const [notificationsLoading, setNotificationsLoading] = useState(false);
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const dropdownRef = useRef<HTMLDivElement>(null);
   const profileButtonRef = useRef<HTMLButtonElement>(null);
+  const notificationDropdownRef = useRef<HTMLDivElement>(null);
+  const bellButtonRef = useRef<HTMLButtonElement>(null);
+
+  const loadNotifications = useCallback(async () => {
+    setNotificationsLoading(true);
+    try {
+      const data = await fetchNotifications(20);
+      setNotifications(data);
+    } catch {
+      setNotifications([]);
+    } finally {
+      setNotificationsLoading(false);
+    }
+  }, []);
+
+  const handleMobileBellClick = () => {
+    const willOpen = !isNotificationOpen;
+    setIsNotificationOpen(willOpen);
+    if (willOpen) loadNotifications();
+  };
+
+  const handleMenuOpen = (open: boolean) => {
+    setIsMenuOpen(open);
+    if (!open) setIsNotificationOpen(false);
+  };
 
   useEffect(() => {
     const handleScroll = () => {
@@ -49,20 +80,26 @@ const MemberNavBar = () => {
       ) {
         setIsDropdownOpen(false);
       }
+      if (
+        isNotificationOpen &&
+        notificationDropdownRef.current &&
+        bellButtonRef.current &&
+        !notificationDropdownRef.current.contains(target) &&
+        !bellButtonRef.current.contains(target)
+      ) {
+        setIsNotificationOpen(false);
+      }
     };
 
     const handleEscape = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
-        if (isMenuOpen) {
-          setIsMenuOpen(false);
-        }
-        if (isDropdownOpen) {
-          setIsDropdownOpen(false);
-        }
+        if (isMenuOpen) setIsMenuOpen(false);
+        if (isDropdownOpen) setIsDropdownOpen(false);
+        if (isNotificationOpen) setIsNotificationOpen(false);
       }
     };
 
-    if (isMenuOpen || isDropdownOpen) {
+    if (isMenuOpen || isDropdownOpen || isNotificationOpen) {
       document.addEventListener("mousedown", handleClickOutside);
       document.addEventListener("keydown", handleEscape);
     }
@@ -71,7 +108,7 @@ const MemberNavBar = () => {
       document.removeEventListener("mousedown", handleClickOutside);
       document.removeEventListener("keydown", handleEscape);
     };
-  }, [isMenuOpen, isDropdownOpen]);
+  }, [isMenuOpen, isDropdownOpen, isNotificationOpen]);
 
   const handleLogout = () => {
     navigate("/");
@@ -81,15 +118,35 @@ const MemberNavBar = () => {
   };
 
   const handleProfileClick = () => {
-    navigate("/member/profile");
+    navigate(user?.role === "admin" ? "/admin/profile" : "/member/profile");
     setIsMenuOpen(false);
     setIsDropdownOpen(false);
   };
 
   const handleResetPasswordClick = () => {
-    navigate("/member/reset-password");
+    navigate(user?.role === "admin" ? "/admin/reset-password" : "/member/reset-password");
     setIsMenuOpen(false);
     setIsDropdownOpen(false);
+  };
+
+  const handleAdminPanelClick = () => {
+    navigate("/admin/article");
+    setIsMenuOpen(false);
+    setIsDropdownOpen(false);
+  };
+
+  const handleNotificationBellClick = () => {
+    const willOpen = !isNotificationOpen;
+    setIsNotificationOpen(willOpen);
+    if (willOpen) loadNotifications();
+  };
+
+  const handleViewAllNotifications = () => {
+    if (user?.role === "admin") {
+      navigate("/admin/notification");
+    }
+    setIsNotificationOpen(false);
+    setIsMenuOpen(false);
   };
 
   return (
@@ -118,16 +175,38 @@ const MemberNavBar = () => {
 
         {/* Right side - Mobile: Hamburger, Tablet/Mobile: Hamburger, Desktop: Notification + Profile */}
         <div className="flex items-center gap-[16px]">
-          {/* Desktop (lg+) - Notification Bell and Profile Dropdown */}
+          {/* Desktop (lg+) - Notification Bell and Profile Dropdown (admin only) */}
           <div className="hidden lg:flex items-center gap-[16px]">
-            {/* Notification Bell */}
-            <button
-              className="relative w-[40px] h-[40px] rounded-full bg-white border border-brown-300 flex items-center justify-center hover:bg-brown-50 transition-colors"
-              aria-label="Notifications"
-            >
-              <Bell className="w-[20px] h-[20px] text-brown-600" />
-              <span className="absolute top-[6px] right-[6px] w-[10px] h-[10px] bg-red-500 rounded-full border-2 border-white"></span>
-            </button>
+            {/* Notification Bell + Dropdown (Desktop) - admin only */}
+            {user?.role === "admin" && (
+            <div className="relative">
+              <button
+                ref={bellButtonRef}
+                onClick={handleNotificationBellClick}
+                className="relative w-[40px] h-[40px] rounded-full bg-white border border-brown-300 flex items-center justify-center hover:bg-brown-50 transition-colors"
+                aria-label="Notifications"
+              >
+                <Bell className="w-[20px] h-[20px] text-brown-600" />
+                {notifications.length > 0 && (
+                  <span className="absolute top-[6px] right-[6px] w-[10px] h-[10px] bg-red-500 rounded-full border-2 border-white" />
+                )}
+              </button>
+              {isNotificationOpen && (
+                <div
+                  ref={notificationDropdownRef}
+                  className="absolute right-0 top-[52px] z-50"
+                >
+                  <NotificationDropdown
+                    notifications={notifications}
+                    isLoading={notificationsLoading}
+                    variant="desktop"
+                    onViewAllClick={user?.role === "admin" ? handleViewAllNotifications : undefined}
+                    onNotificationClick={() => setIsNotificationOpen(false)}
+                  />
+                </div>
+              )}
+            </div>
+            )}
 
             {/* Profile Dropdown Button */}
             <div className="relative">
@@ -173,7 +252,9 @@ const MemberNavBar = () => {
                   <UserDropdownMenu
                     onProfileClick={handleProfileClick}
                     onResetPasswordClick={handleResetPasswordClick}
+                    onAdminPanelClick={handleAdminPanelClick}
                     onLogoutClick={handleLogout}
+                    isAdmin={user?.role === "admin"}
                   />
                 </div>
               )}
@@ -185,7 +266,7 @@ const MemberNavBar = () => {
             className="hamburger-button w-[24px] h-[24px] lg:hidden cursor-pointer transition-opacity hover:opacity-70 active:opacity-50"
             src={hamburgerMenu}
             alt="hamburger bar"
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
+            onClick={() => handleMenuOpen(!isMenuOpen)}
           />
         </div>
       </nav>
@@ -194,7 +275,7 @@ const MemberNavBar = () => {
       {isMenuOpen && (
         <div
           className="fixed inset-0 bg-brown-900/20 backdrop-blur-sm z-40 lg:hidden transition-opacity duration-300"
-          onClick={() => setIsMenuOpen(false)}
+          onClick={() => handleMenuOpen(false)}
         />
       )}
 
@@ -206,8 +287,8 @@ const MemberNavBar = () => {
       >
         <div className="flex flex-col">
           {/* User Profile Section - Mobile/Tablet */}
-          <div className="member-nav flex items-center gap-[12px] px-[24px] py-[20px] md:px-[40px] md:py-[24px]">
-            <div className="w-[48px] h-[48px] md:w-[56px] md:h-[56px] rounded-full bg-brown-300 flex items-center justify-center shrink-0">
+          <div className="member-nav flex items-center gap-[12px] px-[24px] py-[20px] md:px-[40px] md:py-[24px] border-b border-brown-200">
+            <div className="w-[48px] h-[48px] md:w-[56px] md:h-[56px] rounded-full bg-brown-300 flex items-center justify-center shrink-0 overflow-hidden">
               {user?.avatar ? (
                 <img
                   src={user.avatar}
@@ -226,21 +307,46 @@ const MemberNavBar = () => {
               </p>
             </div>
             <button
-              className="w-[32px] h-[32px] md:w-[40px] md:h-[40px] rounded-full border border-brown-300 bg-white flex items-center justify-center shrink-0 hover:bg-brown-50 transition-colors"
+              type="button"
+              ref={bellButtonRef}
+              onClick={handleMobileBellClick}
+              className="relative w-[32px] h-[32px] md:w-[40px] md:h-[40px] rounded-full border border-brown-300 bg-white flex items-center justify-center shrink-0 hover:bg-brown-50 transition-colors"
               aria-label="Notifications"
             >
               <Bell className="w-[18px] h-[18px] md:w-[20px] md:h-[20px] text-brown-600" />
+              {notifications.length > 0 && (
+                <span className="absolute top-[4px] right-[4px] md:top-[6px] md:right-[6px] w-[10px] h-[10px] bg-red-500 rounded-full border-2 border-white" />
+              )}
             </button>
           </div>
 
-          {/* Menu Items - Using UserDropdownMenu component */}
-          <div className="flex flex-col px-[24px] py-[20px] md:px-[40px] md:py-[24px]">
-            <UserDropdownMenu
-              onProfileClick={handleProfileClick}
-              onResetPasswordClick={handleResetPasswordClick}
-              onLogoutClick={handleLogout}
-              className="bg-brown-100 border-brown-300"
-            />
+          {/* ส่วนล่าง: แสดง Notification แทน UserDropdownMenu เมื่อกด bell (ทับกัน) */}
+          <div className="relative flex flex-col px-[24px] py-[20px] md:px-[40px] md:py-[24px]">
+            {isNotificationOpen ? (
+              /* Notification overlay - แสดงแทน Profile/Reset/Logout เมื่อกด bell */
+              <div
+                ref={notificationDropdownRef}
+                className="bg-white rounded-[8px] shadow-lg shadow-brown-300/20 border border-brown-200 p-[16px] -mx-[24px] md:-mx-[40px] md:p-[20px]"
+              >
+                <NotificationDropdown
+                  notifications={notifications}
+                  isLoading={notificationsLoading}
+                  variant="mobile"
+                  onViewAllClick={user?.role === "admin" ? handleViewAllNotifications : undefined}
+                  onNotificationClick={() => handleMenuOpen(false)}
+                />
+              </div>
+            ) : (
+              /* UserDropdownMenu - Profile, Reset password, Logout */
+              <UserDropdownMenu
+                onProfileClick={handleProfileClick}
+                onResetPasswordClick={handleResetPasswordClick}
+                onAdminPanelClick={handleAdminPanelClick}
+                onLogoutClick={handleLogout}
+                isAdmin={user?.role === "admin"}
+                className="bg-brown-100 border-brown-300"
+              />
+            )}
           </div>
         </div>
       </div>
