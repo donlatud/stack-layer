@@ -21,7 +21,6 @@ const AUTHOR_NAME = "Thompson P.";
 
 export interface UseCreateArticleReturn {
   thumbnailPreview: string;
-  imageUrl: string;
   categories: CategoryItem[];
   categoryId: number | "";
   title: string;
@@ -34,7 +33,6 @@ export interface UseCreateArticleReturn {
   authorName: string;
   onThumbnailUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onRemoveThumbnail: () => void;
-  onImageUrlChange: (value: string) => void;
   onCategoryChange: (value: number | "") => void;
   onTitleChange: (value: string) => void;
   onIntroductionChange: (value: string) => void;
@@ -80,10 +78,14 @@ export function useCreateArticle(
           const article = await fetchPostById(articleId);
           if (article) {
             setTitle(article.title);
-            const match = categories.find(
-              (c) => c.name.toLowerCase() === article.category.toLowerCase()
-            );
-            setCategoryId(match ? match.id : "");
+            if (article.category_id != null && categories.some((c) => c.id === article.category_id)) {
+              setCategoryId(article.category_id);
+            } else {
+              const match = categories.find(
+                (c) => c.name.toLowerCase() === article.category.toLowerCase()
+              );
+              setCategoryId(match ? match.id : "");
+            }
             setIntroduction(article.description);
             setContent(article.content);
             setImageUrl(article.image);
@@ -124,6 +126,10 @@ export function useCreateArticle(
       toast.error("Please enter a title");
       return false;
     }
+    if (!isEditMode && !thumbnailImage && !thumbnailPreview) {
+      toast.error("Please upload a thumbnail image");
+      return false;
+    }
     return true;
   };
 
@@ -159,7 +165,7 @@ export function useCreateArticle(
       const body = toCreatePostBody(
         title.trim(),
         getEffectiveImageUrl(),
-        categoryId,
+        categoryId as number,
         introduction.trim(),
         content.trim(),
         STATUS_DRAFT
@@ -214,7 +220,7 @@ export function useCreateArticle(
       const body = toCreatePostBody(
         title.trim(),
         getEffectiveImageUrl(),
-        categoryId,
+        categoryId as number,
         introduction.trim(),
         content.trim(),
         STATUS_PUBLISHED
@@ -259,16 +265,8 @@ export function useCreateArticle(
     setImageUrl("");
   };
 
-  const handleImageUrlChange = (value: string) => {
-    setImageUrl(value);
-    if (value && value.startsWith("http")) {
-      setThumbnailPreview(value);
-    }
-  };
-
   return {
     thumbnailPreview,
-    imageUrl,
     categories,
     categoryId,
     title,
@@ -281,7 +279,6 @@ export function useCreateArticle(
     authorName: AUTHOR_NAME,
     onThumbnailUpload: handleThumbnailUpload,
     onRemoveThumbnail: handleRemoveThumbnail,
-    onImageUrlChange: handleImageUrlChange,
     onCategoryChange: setCategoryId,
     onTitleChange: setTitle,
     onIntroductionChange: setIntroduction,

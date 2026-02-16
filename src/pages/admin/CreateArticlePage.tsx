@@ -36,11 +36,8 @@ const CreateArticlePage = () => {
         <article className="bg-white rounded-[8px] border border-gray-200 p-[40px]">
           <ArticleThumbnailField
             thumbnailPreview={article.thumbnailPreview}
-            imageUrl={article.imageUrl}
-            isEditMode={article.isEditMode}
             onThumbnailUpload={article.onThumbnailUpload}
             onRemoveThumbnail={article.onRemoveThumbnail}
-            onImageUrlChange={article.onImageUrlChange}
           />
 
           <ArticleFormFields

@@ -6,20 +6,22 @@ import ArticleFilterButtons from "./filters/ArticleFilterButtons";
 import ArticleGrid from "./grid/ArticleGrid";
 import { LoadingMessage } from "../common/LoadingMessage";
 import { fetchBlogPosts } from "../../data/blogPosts";
-import { CATEGORIES } from "../../constants/categories";
+import { fetchCategories } from "../../data/categoriesApi";
 import { DEFAULT_PAGE } from "../../constants/pagination";
 import { buildApiParams, filterPostsBySearch, checkHasMore } from "../../utils/blogUtils";
 import type { BlogPost } from "../../types/blog";
 
+/** ตัวเลือกกรองหมวดหมู่: Highlight (พิเศษ) + ชื่อจาก API */
+const FILTER_FIRST = "Highlight";
+
 /**
  * ส่วนหลักแสดงรายการบทความ (หน้าแรก / member)
  * ค้นหาทำฝั่ง client; เปลี่ยนหมวดหมู่จะ fetch ใหม่ และรีเซ็ตหน้า
- * โหลดเพิ่มผ่าน "View more" (เพิ่มหน้าไปเรื่อยๆ)
+ * หมวดหมู่ดึงจาก API
  */
 const ArticleSection = () => {
-  const [selectedCategory, setSelectedCategory] = useState<string>(
-    CATEGORIES[0] // "Highlight"
-  );
+  const [categoryOptions, setCategoryOptions] = useState<string[]>([FILTER_FIRST]);
+  const [selectedCategory, setSelectedCategory] = useState<string>(FILTER_FIRST);
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [apiPosts, setApiPosts] = useState<BlogPost[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -27,6 +29,12 @@ const ArticleSection = () => {
   const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState<number>(DEFAULT_PAGE);
   const [hasMore, setHasMore] = useState<boolean>(false);
+
+  useEffect(() => {
+    fetchCategories().then((list) => {
+      setCategoryOptions([FILTER_FIRST, ...list.map((c) => c.name)]);
+    });
+  }, []);
 
   /**
    * Filter posts by search query using useMemo for performance
@@ -109,6 +117,7 @@ const ArticleSection = () => {
             allPosts={apiPosts}
           />
           <ArticleCategoryFilter
+            options={categoryOptions}
             selectedCategory={selectedCategory}
             onChangeCategory={setSelectedCategory}
           />
@@ -116,6 +125,7 @@ const ArticleSection = () => {
         {/* Desktop Layout: Filter Buttons and Search Bar in row */}
         <div className="hidden lg:flex lg:items-center lg:justify-between lg:rounded-[16px] lg:bg-brown-200 lg:px-[24px] lg:py-[16px]">
           <ArticleFilterButtons
+            options={categoryOptions}
             selectedCategory={selectedCategory}
             onChangeCategory={setSelectedCategory}
           />

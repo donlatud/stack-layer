@@ -104,13 +104,13 @@ const MemberNavBar = () => {
   };
 
   const handleProfileClick = () => {
-    navigate(user?.role === "admin" ? "/admin/profile" : "/member/profile");
+    navigate("/member/profile");
     setIsMenuOpen(false);
     setIsDropdownOpen(false);
   };
 
   const handleResetPasswordClick = () => {
-    navigate(user?.role === "admin" ? "/admin/reset-password" : "/member/reset-password");
+    navigate("/member/reset-password");
     setIsMenuOpen(false);
     setIsDropdownOpen(false);
   };

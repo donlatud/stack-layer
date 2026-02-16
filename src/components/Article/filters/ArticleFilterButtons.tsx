@@ -1,7 +1,7 @@
-import { CATEGORIES } from "../../../constants/categories";
 import { cn } from "@/lib/utils";
 
 interface ArticleFilterButtonsProps {
+  options: string[];
   selectedCategory: string;
   onChangeCategory: (category: string) => void;
 }
@@ -11,15 +11,16 @@ const FILTER_BASE =
 
 /**
  * ปุ่มกรองหมวดหมู่ (แสดงในเดสก์ท็อป lg+; ซ่อนในมือถือ)
- * ปุ่มที่เลือกอยู่จะถูก disabled และไฮไลต์
+ * options จาก API (Highlight + ชื่อ category)
  */
 const ArticleFilterButtons = ({
+  options,
   selectedCategory,
   onChangeCategory,
 }: ArticleFilterButtonsProps) => {
   return (
     <div className="hidden lg:flex lg:gap-2">
-      {CATEGORIES.map((category) => {
+      {options.map((category) => {
         const isSelected = selectedCategory === category;
         return (
           <button

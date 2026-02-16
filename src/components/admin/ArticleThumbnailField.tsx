@@ -3,28 +3,22 @@ import { Button } from "../ui/button";
 
 export interface ArticleThumbnailFieldProps {
   thumbnailPreview: string;
-  imageUrl: string;
-  isEditMode: boolean;
   onThumbnailUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onRemoveThumbnail: () => void;
-  onImageUrlChange: (value: string) => void;
 }
 
 export function ArticleThumbnailField({
   thumbnailPreview,
-  imageUrl,
-  isEditMode,
   onThumbnailUpload,
   onRemoveThumbnail,
-  onImageUrlChange,
 }: ArticleThumbnailFieldProps) {
   return (
     <section className="mb-[32px]">
       <label htmlFor="thumbnail-image" className="block text-body-2 text-brown-600 mb-[12px]">
         Thumbnail image
       </label>
-      <div className="flex items-start gap-[24px]">
-        <div className="relative w-[300px] h-[300px] bg-gray-100 rounded-[8px] border border-gray-300 overflow-hidden flex items-center justify-center">
+      <div className="flex items-end gap-[24px]">
+        <div className="relative w-[300px] h-[300px] shrink-0 bg-gray-100 rounded-[8px] border border-gray-300 overflow-hidden flex items-center justify-center">
           {thumbnailPreview ? (
             <>
               <img
@@ -45,7 +39,7 @@ export function ArticleThumbnailField({
             <Upload className="w-[32px] h-[32px] text-gray-400" />
           )}
         </div>
-        <div className="flex-1 flex flex-col gap-[12px]">
+        <div className="flex-1 flex flex-col justify-end">
           <input
             id="thumbnail-image"
             type="file"
@@ -63,21 +57,6 @@ export function ArticleThumbnailField({
               <span>Upload thumbnail image</span>
             </Button>
           </label>
-          {!isEditMode && (
-            <div>
-              <label htmlFor="image-url" className="block text-body-3 text-gray-600 mb-[4px]">
-                Or paste image URL
-              </label>
-              <input
-                id="image-url"
-                type="url"
-                value={imageUrl}
-                onChange={(e) => onImageUrlChange(e.target.value)}
-                placeholder="https://..."
-                className="w-full h-[40px] px-[12px] bg-white border border-gray-300 rounded-[8px] text-body-2 text-brown-600 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-red focus:border-brand-red"
-              />
-            </div>
-          )}
         </div>
       </div>
     </section>

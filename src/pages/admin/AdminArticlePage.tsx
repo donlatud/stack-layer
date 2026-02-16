@@ -12,6 +12,7 @@ import { cn } from "../../lib/utils";
 import { useFetchList, useFilteredList } from "../../hooks";
 import { fetchAdminPosts } from "../../data/postsApi";
 import type { AdminPostItem } from "../../data/postsApi";
+import { fetchCategories } from "../../data/categoriesApi";
 import {
   MESSAGE_LOADING,
   MESSAGE_NO_ARTICLES,
@@ -19,7 +20,7 @@ import {
 
 /**
  * หน้าจัดการบทความ (Admin)
- * - ตารางบทความ พร้อมค้นหา / กรอง Status, Category
+ * - ตารางบทความ พร้อมค้นหา / กรอง Status, Category (ดึง category จาก API)
  * - ปุ่ม Create article → /admin/article/create
  * - แก้ไข → /admin/article/:id/edit ลบ → /admin/article/:id/delete
  */
@@ -30,6 +31,9 @@ const AdminArticlePage = () => {
   const [categoryFilter, setCategoryFilter] = useState("all");
   const { data: articles, isLoading, error } = useFetchList(fetchAdminPosts, {
     errorMessage: "Failed to load articles.",
+  });
+  const { data: categories } = useFetchList(fetchCategories, {
+    errorMessage: "Failed to load categories.",
   });
 
   const filterArticles = useCallback(
@@ -84,39 +88,47 @@ const AdminArticlePage = () => {
           </div>
 
           <div className="flex items-center justify-end gap-[16px]">
-            <div className="relative">
-              <label htmlFor="admin-article-status" className="sr-only">
-                Filter by status
+            <div className="flex flex-col gap-[4px]">
+              <label htmlFor="admin-article-status" className="text-body-2 text-brown-600">
+                Status
               </label>
-              <select
-                id="admin-article-status"
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-                className="h-[44px] w-[140px] pl-[16px] pr-[40px] bg-white border border-gray-300 rounded-[8px] text-body-1 text-brown-600 appearance-none focus:outline-none focus:ring-2 focus:ring-brand-red focus:border-brand-red"
-              >
-                <option value="all">Status</option>
-                <option value="published">Published</option>
-                <option value="draft">Draft</option>
-              </select>
-              <ChevronDown className="pointer-events-none absolute right-[12px] top-1/2 -translate-y-1/2 w-[16px] h-[16px] text-brown-400" />
+              <div className="relative">
+                <select
+                  id="admin-article-status"
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                  className="h-[44px] w-[140px] pl-[16px] pr-[40px] bg-white border border-gray-300 rounded-[8px] text-body-1 text-brown-600 appearance-none focus:outline-none focus:ring-2 focus:ring-brand-red focus:border-brand-red"
+                  aria-label="Filter by status"
+                >
+                  <option value="all">All</option>
+                  <option value="published">Published</option>
+                  <option value="draft">Draft</option>
+                </select>
+                <ChevronDown className="pointer-events-none absolute right-[12px] top-1/2 -translate-y-1/2 w-[16px] h-[16px] text-brown-400" aria-hidden />
+              </div>
             </div>
 
-            <div className="relative">
-              <label htmlFor="admin-article-category" className="sr-only">
-                Filter by category
+            <div className="flex flex-col gap-[4px]">
+              <label htmlFor="admin-article-category" className="text-body-2 text-brown-600">
+                Category
               </label>
-              <select
-                id="admin-article-category"
-                value={categoryFilter}
-                onChange={(e) => setCategoryFilter(e.target.value)}
-                className="h-[44px] w-[160px] pl-[16px] pr-[40px] bg-white border border-gray-300 rounded-[8px] text-body-1 text-brown-600 appearance-none focus:outline-none focus:ring-2 focus:ring-brand-red focus:border-brand-red"
-              > 
-                <option value="all">Category</option>
-                <option value="cat">Cat</option>
-                <option value="general">General</option>
-                <option value="inspiration">Inspiration</option>
-              </select>
-              <ChevronDown className="pointer-events-none absolute right-[12px] top-1/2 -translate-y-1/2 w-[16px] h-[16px] text-brown-400" />
+              <div className="relative">
+                <select
+                  id="admin-article-category"
+                  value={categoryFilter}
+                  onChange={(e) => setCategoryFilter(e.target.value)}
+                  className="h-[44px] w-[160px] pl-[16px] pr-[40px] bg-white border border-gray-300 rounded-[8px] text-body-1 text-brown-600 appearance-none focus:outline-none focus:ring-2 focus:ring-brand-red focus:border-brand-red"
+                  aria-label="Filter by category"
+                >
+                  <option value="all">All</option>
+                  {categories.map((c) => (
+                    <option key={c.id} value={c.name}>
+                      {c.name}
+                    </option>
+                  ))}
+                </select>
+                <ChevronDown className="pointer-events-none absolute right-[12px] top-1/2 -translate-y-1/2 w-[16px] h-[16px] text-brown-400" aria-hidden />
+              </div>
             </div>
           </div>
         </form>

@@ -3,7 +3,8 @@ import type { ApiPost } from "../types/api";
 import axios from "axios";
 import { apiClient } from "../lib/apiClient";
 import { formatDate } from "../utils/dateUtils";
-import { CATEGORY_ID_TO_NAME, CATEGORY_NAME_TO_ID } from "../constants/categories";
+import { fetchCategories } from "./categoriesApi";
+import type { CategoryItem } from "./categoriesApi";
 
 /** โครงสร้าง response จาก stack-layer-server GET /posts */
 interface ApiPostsResponse {
@@ -17,25 +18,34 @@ interface ApiPostsResponse {
   };
 }
 
-/** แปลง post จาก API เป็น BlogPost สำหรับใช้ใน client */
-const mapApiPostToBlogPost = (post: ApiPost): BlogPost => ({
-  id: post.id,
-  image: post.image,
-  category: CATEGORY_ID_TO_NAME[post.category_id] ?? "General",
-  title: post.title,
-  description: post.description,
-  author: "Thompson P.",
-  date: formatDate(post.date),
-  likes: post.likes_count ?? 0,
-  content: post.content,
-  ...(typeof post.is_liked === "boolean" && { is_liked: post.is_liked }),
-});
+/** แปลง post จาก API เป็น BlogPost (ใช้ชื่อ category จากรายการ categories) */
+const mapApiPostToBlogPost = (
+  post: ApiPost,
+  categories: CategoryItem[]
+): BlogPost => {
+  const categoryName =
+    categories.find((c) => c.id === post.category_id)?.name ?? "General";
+  return {
+    id: post.id,
+    image: post.image,
+    category: categoryName,
+    category_id: post.category_id,
+    title: post.title,
+    description: post.description,
+    author: "Thompson P.",
+    date: formatDate(post.date),
+    likes: post.likes_count ?? 0,
+    content: post.content,
+    ...(typeof post.is_liked === "boolean" && { is_liked: post.is_liked }),
+  };
+};
 
-/** ดึงบทความจาก API stack-layer-server (รองรับ page, limit, category, keyword) */
+/** ดึงบทความจาก API stack-layer-server (ใช้ categories จาก API สำหรับชื่อและ filter) */
 export const fetchBlogPosts = async (
   params?: FetchBlogPostsParams
 ): Promise<BlogPostsResponse> => {
   try {
+    const categories = await fetchCategories();
     const queryParams = new URLSearchParams();
 
     if (params?.page) {
@@ -44,10 +54,13 @@ export const fetchBlogPosts = async (
     if (params?.limit) {
       queryParams.append("limit", params.limit.toString());
     }
-    if (params?.category && params.category !== "All" && params.category !== "Highlight") {
-      const categoryId = CATEGORY_NAME_TO_ID[params.category];
-      if (categoryId != null) {
-        queryParams.append("category", categoryId.toString());
+    const categoryName = params?.category;
+    if (categoryName && categoryName !== "All" && categoryName !== "Highlight") {
+      const category = categories.find(
+        (c) => c.name.toLowerCase() === categoryName.toLowerCase()
+      );
+      if (category) {
+        queryParams.append("category", category.id.toString());
       }
     }
     if (params?.keyword && params.keyword.trim() !== "") {
@@ -58,7 +71,9 @@ export const fetchBlogPosts = async (
     const response = await apiClient.get<ApiPostsResponse>(url);
 
     const apiData = response.data.data;
-    const formattedPosts = apiData.posts.map((post) => mapApiPostToBlogPost(post));
+    const formattedPosts = apiData.posts.map((post) =>
+      mapApiPostToBlogPost(post, categories)
+    );
 
     return {
       totalPosts: apiData.totalPosts,
@@ -79,17 +94,20 @@ interface ApiPostResponse {
   data: ApiPost | null;
 }
 
-/** ดึงบทความเดียวจาก API ตาม ID (GET /posts/:postId) */
+/** ดึงบทความเดียวจาก API ตาม ID (ใช้ชื่อ category จาก API) */
 export const fetchPostById = async (postId: string): Promise<BlogPost | null> => {
   try {
-    const response = await apiClient.get<ApiPostResponse>(`/posts/${postId}`);
+    const [categories, response] = await Promise.all([
+      fetchCategories(),
+      apiClient.get<ApiPostResponse>(`/posts/${postId}`),
+    ]);
 
     const post = response.data.data;
     if (!post) {
       return null;
     }
 
-    return mapApiPostToBlogPost(post);
+    return mapApiPostToBlogPost(post, categories);
   } catch (error) {
     if (axios.isAxiosError(error) && error.response?.status === 404) {
       return null;
