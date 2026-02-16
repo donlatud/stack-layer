@@ -1,18 +1,16 @@
-import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import AdminLayout from "../../components/admin/AdminLayout";
 import BlackButton from "../../components/common/BlackButton";
-import { cn } from "../../lib/utils";
+import {
+  ProfileAvatarBlock,
+  ProfileFormFields,
+} from "../../components/profile";
 import { useAuth } from "../../contexts/AuthContext";
-import { updateProfile } from "../../services/authService";
-
-/** คลาส input ใช้ร่วมกันในฟอร์มโปรไฟล์ (ความกว้าง โฟกัส ขอบ) */
-const PROFILE_INPUT_CLASS =
-  "w-[480px] max-w-full h-[44px] px-[16px] bg-white border border-gray-300 rounded-[8px] text-body-1 text-[#2D2D2D] focus:outline-none focus:ring-2 focus:ring-brand-red focus:border-brand-red";
+import { useProfileForm } from "../../hooks";
 
 const MAX_BIO_LENGTH = 120;
-const ALLOWED_AVATAR_TYPES = ["image/jpeg", "image/png", "image/gif", "image/webp"];
-const MAX_AVATAR_SIZE_BYTES = 5 * 1024 * 1024; // 5MB
+const DEFAULT_BIO =
+  "I am a pet enthusiast and freelance writer who specializes in animal behavior and care. With a deep love for cats, I enjoy sharing insights on feline companionship and wellness.\nWhen I'm not writing, I spend time volunteering at my local animal shelter, helping cats find loving homes.";
 
 /**
  * หน้าโปรไฟล์ (Admin)
@@ -20,89 +18,34 @@ const MAX_AVATAR_SIZE_BYTES = 5 * 1024 * 1024; // 5MB
  */
 const AdminProfilePage = () => {
   const { user, updateUser } = useAuth();
-  const [formData, setFormData] = useState({
-    name: user?.name ?? "",
-    username: user?.email?.split("@")[0] ?? "",
-    email: user?.email ?? "",
-    bio: "I am a pet enthusiast and freelance writer who specializes in animal behavior and care. With a deep love for cats, I enjoy sharing insights on feline companionship and wellness.\nWhen I'm not writing, I spend time volunteering at my local animal shelter, helping cats find loving homes.",
+  const {
+    formData,
+    displayName,
+    displayAvatar,
+    handleChange,
+    handleImageUpload,
+    handleSave: saveProfile,
+    isSaving,
+  } = useProfileForm({
+    user,
+    updateUser,
+    includeBio: true,
+    maxBioLength: MAX_BIO_LENGTH,
+    initialBio: DEFAULT_BIO,
   });
-  const [profileImage, setProfileImage] = useState<string | null>(user?.avatar ?? null);
-  const [profileFile, setProfileFile] = useState<File | null>(null);
-  const [isSaving, setIsSaving] = useState(false);
 
-  useEffect(() => {
-    if (user) {
-      setFormData((prev) => ({
-        ...prev,
-        name: user.name ?? "",
-        username: user.email?.split("@")[0] ?? "",
-        email: user.email ?? "",
-      }));
-      setProfileImage(user.avatar ?? null);
-      setProfileFile(null);
-    }
-  }, [user]);
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    if (name === "bio" && value.length > MAX_BIO_LENGTH) return;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    if (!ALLOWED_AVATAR_TYPES.includes(file.type)) {
-      toast.error("Please upload a valid image (JPEG, PNG, GIF, WebP).");
-      return;
-    }
-    if (file.size > MAX_AVATAR_SIZE_BYTES) {
-      toast.error("Image must be smaller than 5MB.");
-      return;
-    }
-    setProfileFile(file);
-    setProfileImage(URL.createObjectURL(file));
-  };
-
-  const handleSubmit = async () => {
-    const form = new FormData();
-    form.append("name", formData.name.trim());
-    if (profileFile) {
-      form.append("avatarFile", profileFile);
-    }
-    const hasChanges = profileFile || formData.name.trim() !== (user?.name ?? "");
-    if (!hasChanges) {
-      toast.success("No changes to save", { className: "toast-success-custom" });
-      return;
-    }
-    setIsSaving(true);
-    try {
-      const result = await updateProfile(form);
-      if (result.success && result.user) {
-        const merged = {
-          ...result.user,
-          email: user?.email ?? result.user.email ?? "",
-        };
-        updateUser(merged);
-        setProfileFile(null);
+  const handleSubmit = () => {
+    saveProfile({
+      onNoChanges: () =>
+        toast.success("No changes to save", { className: "toast-success-custom" }),
+      onSuccess: () =>
         toast.success("Saved profile", {
           description: "Your profile has been successfully updated",
           duration: 2000,
           className: "toast-success-custom",
-        });
-      } else {
-        toast.error(result.message ?? "Failed to update profile");
-      }
-    } catch {
-      toast.error("Failed to update profile");
-    } finally {
-      setIsSaving(false);
-    }
+        }),
+    });
   };
-
-  const bioLength = formData.bio.length;
-  const displayName = formData.name || user?.name || "User";
-  const displayAvatar = profileImage || (user?.avatar ?? null);
 
   return (
     <AdminLayout activeItem="profile">
@@ -119,104 +62,22 @@ const AdminProfilePage = () => {
 
         {/* Profile Form */}
         <section className="max-w-[1160px] pl-[32px] pt-[32px]">
-          {/* Profile Picture Section */}
-          <div className="flex items-center gap-[24px] mb-[32px]">
-            <div className="w-[96px] h-[96px] rounded-full bg-gray-200 flex items-center justify-center overflow-hidden shrink-0">
-              {displayAvatar ? (
-                <img
-                  src={displayAvatar}
-                  alt={displayName}
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <span className="text-headline-2 text-gray-600 font-medium">
-                  {displayName.charAt(0)}
-                </span>
-              )}
-            </div>
-            <label>
-              <input
-                type="file"
-                accept="image/*"
-                onChange={handleImageUpload}
-                className="hidden"
-              />
-              <div className="h-[44px] px-[24px] rounded-[999px] bg-white border border-gray-300 text-[#2D2D2D] text-body-1 font-medium flex items-center justify-center cursor-pointer hover:bg-gray-50 transition-colors">
-                Upload profile picture
-              </div>
-            </label>
-          </div>
+          <ProfileAvatarBlock
+            displayAvatar={displayAvatar}
+            displayName={displayName}
+            onImageUpload={handleImageUpload}
+            variant="admin"
+          />
 
           <div className="h-px bg-gray-200 mb-[32px]" />
 
-          {/* Form Fields */}
-          <form className="flex flex-col gap-[24px]">
-            <div className="flex flex-col gap-[4px]">
-              <label htmlFor="name" className="text-body-2 text-gray-600">
-                Name
-              </label>
-              <input
-                type="text"
-                id="name"
-                name="name"
-                value={formData.name}
-                onChange={handleChange}
-                className={PROFILE_INPUT_CLASS}
-              />
-            </div>
-
-            <div className="flex flex-col gap-[4px]">
-              <label htmlFor="username" className="text-body-2 text-gray-600">
-                Username
-              </label>
-              <input
-                type="text"
-                id="username"
-                name="username"
-                value={formData.username}
-                onChange={handleChange}
-                className={PROFILE_INPUT_CLASS}
-              />
-            </div>
-
-            <div className="flex flex-col gap-[4px]">
-              <label htmlFor="email" className="text-body-2 text-gray-600">
-                Email
-              </label>
-              <input
-                type="email"
-                id="email"
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-                className={PROFILE_INPUT_CLASS}
-              />
-            </div>
-
-            <div className="flex flex-col gap-[4px]">
-              <div className="flex items-center justify-between">
-                <label htmlFor="bio" className="text-body-2 text-gray-600">
-                  Bio (max 120 letters)
-                </label>
-                <span
-                  className={cn(
-                    "text-body-3",
-                    bioLength > MAX_BIO_LENGTH ? "text-brand-red" : "text-gray-400"
-                  )}
-                >
-                  {bioLength}/{MAX_BIO_LENGTH}
-                </span>
-              </div>
-              <textarea
-                id="bio"
-                name="bio"
-                value={formData.bio}
-                onChange={handleChange}
-                rows={5}
-                className="w-full px-[16px] py-[12px] bg-white border border-gray-300 rounded-[8px] text-body-1 text-[#2D2D2D] resize-none focus:outline-none focus:ring-2 focus:ring-brand-red focus:border-brand-red"
-              />
-            </div>
-          </form>
+          <ProfileFormFields
+            formData={formData}
+            onChange={handleChange}
+            variant="admin"
+            includeBio
+            maxBioLength={MAX_BIO_LENGTH}
+          />
         </section>
       </div>
     </AdminLayout>

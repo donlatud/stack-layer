@@ -1,5 +1,6 @@
 import BlogCard from "./BlogCard";
 import WhiteButton from "../../common/WhiteButton";
+import { LoadingMessage } from "../../common/LoadingMessage";
 import type { BlogPost } from "../../../types/blog";
 import { cn } from "@/lib/utils";
 
@@ -40,9 +41,7 @@ const ArticleGrid = ({
       </div>
       {hasMore && (
         <div className="flex flex-col justify-center items-center gap-[16px]">
-          {isLoadingMore && (
-            <p className="text-body-1 text-brown-400">Loading...</p>
-          )}
+          {isLoadingMore && <LoadingMessage />}
           <WhiteButton
             onClick={onLoadMore}
             disabled={isLoadingMore}

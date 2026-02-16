@@ -1,11 +1,21 @@
-import { useState, useEffect } from "react";
+import { useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import AdminLayout from "../../components/admin/AdminLayout";
+import {
+  LoadingState,
+  ErrorState,
+  TableEmptyRow,
+} from "../../components/admin/AdminListState";
 import { Plus, Search, Edit, Trash2, ChevronDown } from "lucide-react";
 import BlackButton from "../../components/common/BlackButton";
 import { cn } from "../../lib/utils";
+import { useFetchList, useFilteredList } from "../../hooks";
 import { fetchAdminPosts } from "../../data/postsApi";
 import type { AdminPostItem } from "../../data/postsApi";
+import {
+  MESSAGE_LOADING,
+  MESSAGE_NO_ARTICLES,
+} from "../../constants/adminList";
 
 /**
  * หน้าจัดการบทความ (Admin)
@@ -18,38 +28,25 @@ const AdminArticlePage = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [categoryFilter, setCategoryFilter] = useState("all");
-  const [articles, setArticles] = useState<AdminPostItem[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    const loadArticles = async () => {
-      setIsLoading(true);
-      setError(null);
-      try {
-        const data = await fetchAdminPosts();
-        setArticles(data);
-      } catch (err) {
-        console.error("Error loading articles:", err);
-        setError("Failed to load articles.");
-        setArticles([]);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    loadArticles();
-  }, []);
-
-  // กรองบทความตามคำค้น, สถานะ และหมวดหมู่ (client-side)
-  const filteredArticles = articles.filter((article) => {
-    const q = searchQuery.trim().toLowerCase();
-    const matchSearch = !q || article.title.toLowerCase().includes(q);
-    const matchStatus =
-      statusFilter === "all" || article.status.toLowerCase() === statusFilter.toLowerCase();
-    const matchCategory =
-      categoryFilter === "all" || article.category.toLowerCase() === categoryFilter.toLowerCase();
-    return matchSearch && matchStatus && matchCategory;
+  const { data: articles, isLoading, error } = useFetchList(fetchAdminPosts, {
+    errorMessage: "Failed to load articles.",
   });
+
+  const filterArticles = useCallback(
+    (article: AdminPostItem) => {
+      const q = searchQuery.trim().toLowerCase();
+      const matchSearch = !q || article.title.toLowerCase().includes(q);
+      const matchStatus =
+        statusFilter === "all" ||
+        article.status.toLowerCase() === statusFilter.toLowerCase();
+      const matchCategory =
+        categoryFilter === "all" ||
+        article.category.toLowerCase() === categoryFilter.toLowerCase();
+      return matchSearch && matchStatus && matchCategory;
+    },
+    [searchQuery, statusFilter, categoryFilter]
+  );
+  const filteredArticles = useFilteredList(articles, filterArticles);
 
   return (
     <AdminLayout activeItem="article">
@@ -126,13 +123,9 @@ const AdminArticlePage = () => {
 
         <section className="bg-white rounded-[8px] border border-gray-200 overflow-hidden">
           {isLoading ? (
-            <div className="px-[24px] py-[60px] text-center text-body-1 text-brown-400">
-              Loading...
-            </div>
+            <LoadingState variant="table" message={MESSAGE_LOADING} />
           ) : error ? (
-            <div className="px-[24px] py-[60px] text-center text-body-1 text-brand-red">
-              {error}
-            </div>
+            <ErrorState message={error} variant="table" />
           ) : (
             <table className="w-full" aria-label="Articles table">
               <thead>
@@ -194,11 +187,7 @@ const AdminArticlePage = () => {
                   </tr>
                 ))}
                 {filteredArticles.length === 0 && (
-                  <tr>
-                    <td className="px-[24px] py-[20px] text-body-1 text-brown-400" colSpan={4}>
-                      No articles found.
-                    </td>
-                  </tr>
+                  <TableEmptyRow message={MESSAGE_NO_ARTICLES} colSpan={4} />
                 )}
               </tbody>
             </table>

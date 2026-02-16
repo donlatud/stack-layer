@@ -1,6 +1,5 @@
-import { useEffect, type ReactNode } from "react";
-import { useNavigate } from "react-router-dom";
-import { useAuth } from "../../contexts/AuthContext";
+import type { ReactNode } from "react";
+import { useRequireAdmin } from "../../hooks";
 
 interface AdminRouteGuardProps {
   children: ReactNode;
@@ -11,18 +10,9 @@ interface AdminRouteGuardProps {
  * ถ้ายังไม่ล็อกอินหรือไม่ใช่ admin → redirect ไป /admin/login
  */
 const AdminRouteGuard = ({ children }: AdminRouteGuardProps) => {
-  const { user, isAuthenticated, isLoading } = useAuth();
-  const navigate = useNavigate();
-  const isAdmin = user?.role === "admin";
+  const { isReady } = useRequireAdmin();
 
-  useEffect(() => {
-    if (isLoading) return;
-    if (!isAuthenticated || !isAdmin) {
-      navigate("/admin/login", { replace: true });
-    }
-  }, [isAuthenticated, isAdmin, isLoading, navigate]);
-
-  if (isLoading || !isAuthenticated || !isAdmin) {
+  if (!isReady) {
     return null;
   }
 

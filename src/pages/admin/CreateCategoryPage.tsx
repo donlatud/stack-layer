@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
+import { LoadingMessage } from "../../components/common/LoadingMessage";
 import AdminLayout from "../../components/admin/AdminLayout";
 import BlackButton from "../../components/common/BlackButton";
 import {
@@ -98,7 +99,7 @@ const CreateCategoryPage = () => {
 
         <article className="pt-[32px]">
           {isEditMode && isLoadingInitial ? (
-            <p className="text-body-1 text-gray-500">Loading...</p>
+            <LoadingMessage className="text-body-1 text-gray-500" />
           ) : (
             <section className="mb-[32px]">
               <label

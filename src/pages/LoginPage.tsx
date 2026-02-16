@@ -1,8 +1,8 @@
-import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
+import { useRequireGuest } from "../hooks";
 import LoginForm from "../components/auth/LoginForm";
-import { login } from "../services/authService";
+import { login } from "../data/authApi";
 
 /**
  * หน้าเข้าสู่ระบบ (member)
@@ -11,15 +11,10 @@ import { login } from "../services/authService";
  */
 const LoginPage = () => {
   const navigate = useNavigate();
-  const { isAuthenticated, isLoading, login: authLogin } = useAuth();
+  const { login: authLogin } = useAuth();
+  const { isReady } = useRequireGuest({ redirectTo: "/member" });
 
-  useEffect(() => {
-    if (!isLoading && isAuthenticated) {
-      navigate("/member", { replace: true });
-    }
-  }, [isAuthenticated, isLoading, navigate]);
-
-  if (isLoading || isAuthenticated) {
+  if (!isReady) {
     return null;
   }
 

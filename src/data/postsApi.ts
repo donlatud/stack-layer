@@ -1,4 +1,5 @@
 import { apiClient } from "../lib/apiClient";
+import type { ApiPost } from "../types/api";
 import { CATEGORY_ID_TO_NAME, CATEGORY_NAME_TO_ID, STATUS_ID_TO_NAME } from "../constants/categories";
 
 /** โครงสร้าง post จาก API สำหรับ Admin list */
@@ -7,19 +8,6 @@ export interface AdminPostItem {
   title: string;
   category: string;
   status: string;
-}
-
-/** โครงสร้าง post จาก API (stack-layer-server) */
-interface ApiPost {
-  id: number;
-  image: string;
-  category_id: number;
-  title: string;
-  description: string;
-  date: string;
-  content: string;
-  status_id: number;
-  likes_count?: number;
 }
 
 /** body สำหรับ create/update post */

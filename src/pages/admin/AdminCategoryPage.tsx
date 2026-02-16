@@ -1,10 +1,21 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import AdminLayout from "../../components/admin/AdminLayout";
+import {
+  LoadingState,
+  ErrorState,
+  ListEmptyItem,
+} from "../../components/admin/AdminListState";
 import { Plus, Search, Edit, Trash2 } from "lucide-react";
 import BlackButton from "../../components/common/BlackButton";
+import { useFetchList, useFilteredList } from "../../hooks";
 import { fetchCategories } from "../../data/categoriesApi";
 import type { CategoryItem } from "../../data/categoriesApi";
+import {
+  MESSAGE_LOADING,
+  MESSAGE_NO_CATEGORIES_YET,
+  MESSAGE_NO_CATEGORIES_MATCH,
+} from "../../constants/adminList";
 
 /**
  * หน้าจัดการหมวดหมู่ (Admin)
@@ -14,32 +25,19 @@ import type { CategoryItem } from "../../data/categoriesApi";
 const AdminCategoryPage = () => {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
-  const [categories, setCategories] = useState<CategoryItem[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { data: categories, isLoading, error } = useFetchList(fetchCategories, {
+    errorMessage: "Failed to load categories. Please try again.",
+  });
 
-  useEffect(() => {
-    const loadCategories = async () => {
-      setIsLoading(true);
-      setError(null);
-      try {
-        const data = await fetchCategories();
-        setCategories(data);
-      } catch (err) {
-        console.error("Error loading categories:", err);
-        setError("Failed to load categories. Please try again.");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    loadCategories();
-  }, []);
-
-  const filteredCategories = useMemo(() => {
-    if (!searchQuery.trim()) return categories;
-    const q = searchQuery.trim().toLowerCase();
-    return categories.filter((c) => c.name.toLowerCase().includes(q));
-  }, [categories, searchQuery]);
+  const filterCategories = useCallback(
+    (c: CategoryItem) => {
+      if (!searchQuery.trim()) return true;
+      const q = searchQuery.trim().toLowerCase();
+      return c.name.toLowerCase().includes(q);
+    },
+    [searchQuery]
+  );
+  const filteredCategories = useFilteredList(categories, filterCategories);
 
   return (
     <AdminLayout activeItem="category">
@@ -82,21 +80,19 @@ const AdminCategoryPage = () => {
             <h2 className="text-body-2 text-gray-600 font-medium">Category</h2>
           </div>
           {isLoading ? (
-            <div className="px-[24px] py-[32px] text-body-1 text-gray-500">
-              Loading...
-            </div>
+            <LoadingState variant="list" message={MESSAGE_LOADING} />
           ) : error ? (
-            <div className="px-[24px] py-[32px] text-body-1 text-brand-red">
-              {error}
-            </div>
+            <ErrorState message={error} variant="list" />
           ) : (
             <ul className="divide-y divide-gray-100">
               {filteredCategories.length === 0 ? (
-                <li className="px-[24px] py-[32px] text-body-1 text-gray-500">
-                  {categories.length === 0
-                    ? "No categories yet."
-                    : "No categories match your search."}
-                </li>
+                <ListEmptyItem
+                  message={
+                    categories.length === 0
+                      ? MESSAGE_NO_CATEGORIES_YET
+                      : MESSAGE_NO_CATEGORIES_MATCH
+                  }
+                />
               ) : (
                 filteredCategories.map((category) => (
                   <li

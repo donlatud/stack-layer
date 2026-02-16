@@ -1,11 +1,11 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../contexts/AuthContext";
+import { useRequireGuest } from "../hooks";
 import AuthPageLayout from "../components/auth/AuthPageLayout";
 import AuthFormCard from "../components/auth/AuthFormCard";
 import FormInput from "../components/auth/FormInput";
 import BlackButton from "../components/common/BlackButton";
-import { signup } from "../services/authService";
+import { signup } from "../data/authApi";
 
 interface FormErrors {
   name?: string;
@@ -20,8 +20,8 @@ interface FormErrors {
  * มี validation; ส่งต่อไป signup service แล้วไป /registration-success
  */
 const SignupPage = () => {
-  const { isAuthenticated, isLoading } = useAuth();
   const navigate = useNavigate();
+  const { isReady } = useRequireGuest({ redirectTo: "/member" });
   const [formData, setFormData] = useState({
     name: "",
     username: "",
@@ -31,11 +31,9 @@ const SignupPage = () => {
   const [errors, setErrors] = useState<FormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  useEffect(() => {
-    if (!isLoading && isAuthenticated) {
-      navigate("/member", { replace: true });
-    }
-  }, [isAuthenticated, isLoading, navigate]);
+  if (!isReady) {
+    return null;
+  }
 
   const validateForm = (): boolean => {
     const e: FormErrors = {};
@@ -82,10 +80,6 @@ const SignupPage = () => {
       setIsSubmitting(false);
     }
   };
-
-  if (isLoading || isAuthenticated) {
-    return null;
-  }
 
   return (
     <AuthPageLayout>

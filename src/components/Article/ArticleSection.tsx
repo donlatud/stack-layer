@@ -4,6 +4,7 @@ import ArticleSearchBar from "./search/ArticleSearchBar";
 import ArticleCategoryFilter from "./filters/ArticleCategoryFilter";
 import ArticleFilterButtons from "./filters/ArticleFilterButtons";
 import ArticleGrid from "./grid/ArticleGrid";
+import { LoadingMessage } from "../common/LoadingMessage";
 import { fetchBlogPosts } from "../../data/blogPosts";
 import { CATEGORIES } from "../../constants/categories";
 import { DEFAULT_PAGE } from "../../constants/pagination";
@@ -129,7 +130,7 @@ const ArticleSection = () => {
         {/* Grid */}
         {isLoading ? (
           <div className="flex justify-center items-center py-[60px]">
-            <p className="text-body-1 text-brown-400">Loading...</p>
+            <LoadingMessage />
           </div>
         ) : error ? (
           <div className="flex justify-center items-center py-[60px]">

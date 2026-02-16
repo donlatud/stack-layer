@@ -1,30 +1,21 @@
-import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import AdminLayout from "../../components/admin/AdminLayout";
-import { fetchNotifications, type NotificationItem } from "../../data/notificationsApi";
+import { useNotifications } from "../../hooks";
+import type { NotificationItem } from "../../data/notificationsApi";
+import { LoadingMessage } from "../../components/common/LoadingMessage";
+import { EmptyMessage } from "../../components/common/EmptyMessage";
+import {
+  MESSAGE_LOADING,
+  MESSAGE_NO_NOTIFICATIONS_YET,
+} from "../../constants/messages";
 
 /**
  * หน้าการแจ้งเตือน (Admin)
  * แสดงรายการ: comments, likes, published จาก API จริง
  */
 const AdminNotificationPage = () => {
-  const [notifications, setNotifications] = useState<NotificationItem[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const { notifications, isLoading } = useNotifications({ limit: 50, autoLoad: true });
   const navigate = useNavigate();
-
-  useEffect(() => {
-    const load = async () => {
-      try {
-        const data = await fetchNotifications(50);
-        setNotifications(data);
-      } catch {
-        setNotifications([]);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    load();
-  }, []);
 
   const handleView = (postId: number) => {
     navigate(`/member/post/${postId}`);
@@ -50,9 +41,15 @@ const AdminNotificationPage = () => {
         {/* Notification List */}
         <section className="max-w-[1160px] pl-[32px] pt-[20px]">
           {isLoading ? (
-            <p className="text-body-2 text-brown-500 py-[24px]">Loading...</p>
+            <LoadingMessage
+              message={MESSAGE_LOADING}
+              className="text-body-2 text-brown-500 py-[24px]"
+            />
           ) : notifications.length === 0 ? (
-            <p className="text-body-2 text-brown-500 py-[24px]">No notifications yet.</p>
+            <EmptyMessage
+              message={MESSAGE_NO_NOTIFICATIONS_YET}
+              className="text-body-2 text-brown-500 py-[24px]"
+            />
           ) : (
             notifications.map((notification) => (
               <article

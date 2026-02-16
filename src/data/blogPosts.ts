@@ -1,21 +1,9 @@
 import type { BlogPost, BlogPostsResponse, FetchBlogPostsParams } from "../types/blog";
+import type { ApiPost } from "../types/api";
 import axios from "axios";
 import { apiClient } from "../lib/apiClient";
+import { formatDate } from "../utils/dateUtils";
 import { CATEGORY_ID_TO_NAME, CATEGORY_NAME_TO_ID } from "../constants/categories";
-
-/** โครงสร้าง post จาก API (stack-layer-server) */
-interface ApiPost {
-  id: number;
-  image: string;
-  category_id: number;
-  title: string;
-  description: string;
-  date: string;
-  content: string;
-  status_id: number;
-  likes_count: number;
-  is_liked?: boolean;
-}
 
 /** โครงสร้าง response จาก stack-layer-server GET /posts */
 interface ApiPostsResponse {
@@ -42,39 +30,6 @@ const mapApiPostToBlogPost = (post: ApiPost): BlogPost => ({
   content: post.content,
   ...(typeof post.is_liked === "boolean" && { is_liked: post.is_liked }),
 });
-
-/** แปลง ISO date เป็น "11 September 2024" */
-export const formatDate = (isoDateString: string): string => {
-  const date = new Date(isoDateString);
-  const day = date.getDate();
-  const monthNames = [
-    "January",
-    "February",
-    "March",
-    "April",
-    "May",
-    "June",
-    "July",
-    "August",
-    "September",
-    "October",
-    "November",
-    "December",
-  ];
-  const month = monthNames[date.getMonth()];
-  const year = date.getFullYear();
-  return `${day} ${month} ${year}`;
-};
-
-/** แปลง ISO date เป็น "12 September 2024 at 18:30" (สำหรับ comment) */
-export const formatDateTime = (isoDateString: string): string => {
-  const date = new Date(isoDateString);
-  const datePart = formatDate(isoDateString);
-  const hours = date.getHours();
-  const minutes = date.getMinutes();
-  const pad = (n: number) => n.toString().padStart(2, "0");
-  return `${datePart} at ${pad(hours)}:${pad(minutes)}`;
-};
 
 /** ดึงบทความจาก API stack-layer-server (รองรับ page, limit, category, keyword) */
 export const fetchBlogPosts = async (
