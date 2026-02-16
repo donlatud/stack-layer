@@ -47,14 +47,24 @@ export const fetchAdminPosts = async (): Promise<AdminPostItem[]> => {
   }));
 };
 
-/** สร้างบทความใหม่ */
+/** สร้างบทความใหม่ (JSON body) */
 export const createPost = async (body: CreatePostBody): Promise<void> => {
   await apiClient.post("/posts", body);
 };
 
-/** แก้ไขบทความ */
+/** สร้างบทความใหม่ด้วยไฟล์รูป (multipart/form-data) — backend อัปโหลดไป Supabase */
+export const createPostWithFile = async (formData: FormData): Promise<void> => {
+  await apiClient.post("/posts", formData);
+};
+
+/** แก้ไขบทความ (JSON body) */
 export const updatePost = async (postId: string, body: CreatePostBody): Promise<void> => {
   await apiClient.put(`/posts/${postId}`, body);
+};
+
+/** แก้ไขบทความด้วยไฟล์รูป (multipart/form-data) — backend อัปโหลดไป Supabase */
+export const updatePostWithFile = async (postId: string, formData: FormData): Promise<void> => {
+  await apiClient.put(`/posts/${postId}`, formData);
 };
 
 /** ลบบทความ */

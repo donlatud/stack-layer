@@ -189,3 +189,35 @@ export const resetPassword = async (
     };
   }
 };
+
+export interface UpdateProfileResponse {
+  success: boolean;
+  user?: User;
+  message?: string;
+}
+
+/** อัปเดตโปรไฟล์ (รูปและ/หรือชื่อ); เรียก PATCH /auth/profile ด้วย FormData */
+export const updateProfile = async (
+  formData: FormData
+): Promise<UpdateProfileResponse> => {
+  try {
+    const response = await apiClient.patch("/auth/profile", formData);
+    if (response.status === 200 && response.data) {
+      const user = mapApiUserToUser(response.data);
+      return { success: true, user };
+    }
+    return { success: false, message: "Failed to update profile" };
+  } catch (error) {
+    if (axios.isAxiosError(error) && error.response?.data?.error) {
+      return {
+        success: false,
+        message: error.response.data.error,
+      };
+    }
+    console.error("Error during profile update:", error);
+    return {
+      success: false,
+      message: "An error occurred. Please try again.",
+    };
+  }
+};

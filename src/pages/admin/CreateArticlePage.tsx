@@ -9,7 +9,9 @@ import { cn } from "../../lib/utils";
 import { fetchPostById } from "../../data/blogPosts";
 import {
   createPost,
+  createPostWithFile,
   updatePost,
+  updatePostWithFile,
   toCreatePostBody,
   PLACEHOLDER_IMAGE,
 } from "../../data/postsApi";
@@ -19,6 +21,9 @@ import type { CategoryItem } from "../../data/categoriesApi";
 const MAX_INTRODUCTION_LENGTH = 120;
 const STATUS_PUBLISHED = 1;
 const STATUS_DRAFT = 2;
+
+const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/gif", "image/webp"];
+const MAX_IMAGE_SIZE_BYTES = 5 * 1024 * 1024; // 5MB
 
 /**
  * หน้าสร้าง/แก้ไขบทความ (Admin)
@@ -32,7 +37,7 @@ const CreateArticlePage = () => {
   const { articleId } = useParams<{ articleId?: string }>();
   const isEditMode = !!articleId;
 
-  const [, setThumbnailImage] = useState<File | null>(null);
+  const [thumbnailImage, setThumbnailImage] = useState<File | null>(null);
   const [thumbnailPreview, setThumbnailPreview] = useState<string>("");
   const [imageUrl, setImageUrl] = useState<string>("");
   const [categories, setCategories] = useState<CategoryItem[]>([]);
@@ -41,6 +46,7 @@ const CreateArticlePage = () => {
   const [title, setTitle] = useState("");
   const [introduction, setIntroduction] = useState("");
   const [content, setContent] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     const loadCategories = async () => {
@@ -83,25 +89,44 @@ const CreateArticlePage = () => {
 
   const handleThumbnailUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      setThumbnailImage(file);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setThumbnailPreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
+    if (!file) return;
+    if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
+      toast.error("Please upload a valid image (JPEG, PNG, GIF, WebP).");
+      return;
     }
+    if (file.size > MAX_IMAGE_SIZE_BYTES) {
+      toast.error("Image must be smaller than 5MB.");
+      return;
+    }
+    setThumbnailImage(file);
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setThumbnailPreview(reader.result as string);
+    };
+    reader.readAsDataURL(file);
   };
 
   const handleRemoveThumbnail = () => {
     setThumbnailImage(null);
     setThumbnailPreview("");
+    setImageUrl("");
   };
 
   const getEffectiveImageUrl = (): string => {
     if (imageUrl.trim()) return imageUrl.trim();
     if (thumbnailPreview.startsWith("http")) return thumbnailPreview;
     return PLACEHOLDER_IMAGE;
+  };
+
+  const buildFormData = (statusId: number): FormData => {
+    const formData = new FormData();
+    formData.append("title", title.trim());
+    formData.append("category_id", String(categoryId));
+    formData.append("description", introduction.trim());
+    formData.append("content", content.trim());
+    formData.append("status_id", String(statusId));
+    formData.append("imageFile", thumbnailImage as File);
+    return formData;
   };
 
   const handleSaveAsDraft = async () => {
@@ -111,6 +136,32 @@ const CreateArticlePage = () => {
     }
     if (!title.trim()) {
       toast.error("Please enter a title");
+      return;
+    }
+    const isCreateWithFile = !isEditMode && thumbnailImage;
+    const isEditWithFile = isEditMode && articleId && thumbnailImage;
+    if (isCreateWithFile || isEditWithFile) {
+      setIsLoading(true);
+      try {
+        const formData = buildFormData(STATUS_DRAFT);
+        if (isEditWithFile) {
+          await updatePostWithFile(articleId, formData);
+          toast.success("Article saved as draft");
+        } else {
+          await createPostWithFile(formData);
+          toast.success("Create article and saved as draft", {
+            description: "You can publish article later",
+            duration: 2000,
+            className: "toast-success-custom",
+          });
+        }
+        navigate("/admin/article");
+      } catch (err) {
+        console.error("Error saving article:", err);
+        toast.error("Failed to save article");
+      } finally {
+        setIsLoading(false);
+      }
       return;
     }
     try {
@@ -147,6 +198,32 @@ const CreateArticlePage = () => {
     }
     if (!title.trim()) {
       toast.error("Please enter a title");
+      return;
+    }
+    const isCreateWithFile = !isEditMode && thumbnailImage;
+    const isEditWithFile = isEditMode && articleId && thumbnailImage;
+    if (isCreateWithFile || isEditWithFile) {
+      setIsLoading(true);
+      try {
+        const formData = buildFormData(STATUS_PUBLISHED);
+        if (isEditWithFile) {
+          await updatePostWithFile(articleId, formData);
+          toast.success("Article updated and published");
+        } else {
+          await createPostWithFile(formData);
+          toast.success("Create article and published", {
+            description: "Your article has been successfully published",
+            duration: 2000,
+            className: "toast-success-custom",
+          });
+        }
+        navigate("/admin/article");
+      } catch (err) {
+        console.error("Error saving article:", err);
+        toast.error("Failed to save article");
+      } finally {
+        setIsLoading(false);
+      }
       return;
     }
     try {
@@ -191,15 +268,17 @@ const CreateArticlePage = () => {
             <Button
               type="button"
               variant="outline"
-              className="h-[44px] w-[187px] px-[24px] rounded-[999px] border border-gray-300 bg-white text-brown-600 hover:bg-gray-50"
+              className="h-[44px] w-[187px] px-[24px] rounded-[999px] border border-gray-300 bg-white text-brown-600 hover:bg-gray-50 disabled:opacity-50"
               onClick={handleSaveAsDraft}
+              disabled={isLoading}
             >
               Save as draft
             </Button>
             <BlackButton
               type="button"
-              className="h-[44px] w-[210px] px-[24px]"
+              className="h-[44px] w-[210px] px-[24px] disabled:opacity-50"
               onClick={handleSaveAndPublish}
+              disabled={isLoading}
             >
               {isEditMode ? "Save" : "Save and publish"}
             </BlackButton>
@@ -213,7 +292,7 @@ const CreateArticlePage = () => {
               Thumbnail image
             </label>
             <div className="flex items-start gap-[24px]">
-              <div className="relative w-[200px] h-[150px] bg-gray-100 rounded-[8px] border border-gray-300 overflow-hidden flex items-center justify-center">
+              <div className="relative w-[300px] h-[300px] bg-gray-100 rounded-[8px] border border-gray-300 overflow-hidden flex items-center justify-center">
                 {thumbnailPreview ? (
                   <>
                     <img
@@ -252,24 +331,26 @@ const CreateArticlePage = () => {
                     <span>Upload thumbnail image</span>
                   </Button>
                 </label>
-                <div>
-                  <label htmlFor="image-url" className="block text-body-3 text-gray-600 mb-[4px]">
-                    Or paste image URL (required for API)
-                  </label>
-                  <input
-                    id="image-url"
-                    type="url"
-                    value={imageUrl}
-                    onChange={(e) => {
-                      setImageUrl(e.target.value);
-                      if (e.target.value && e.target.value.startsWith("http")) {
-                        setThumbnailPreview(e.target.value);
-                      }
-                    }}
-                    placeholder="https://..."
-                    className="w-full h-[40px] px-[12px] bg-white border border-gray-300 rounded-[8px] text-body-2 text-brown-600 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-red focus:border-brand-red"
-                  />
-                </div>
+                {!isEditMode && (
+                  <div>
+                    <label htmlFor="image-url" className="block text-body-3 text-gray-600 mb-[4px]">
+                      Or paste image URL
+                    </label>
+                    <input
+                      id="image-url"
+                      type="url"
+                      value={imageUrl}
+                      onChange={(e) => {
+                        setImageUrl(e.target.value);
+                        if (e.target.value && e.target.value.startsWith("http")) {
+                          setThumbnailPreview(e.target.value);
+                        }
+                      }}
+                      placeholder="https://..."
+                      className="w-full h-[40px] px-[12px] bg-white border border-gray-300 rounded-[8px] text-body-2 text-brown-600 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-red focus:border-brand-red"
+                    />
+                  </div>
+                )}
               </div>
             </div>
           </section>
@@ -285,7 +366,7 @@ const CreateArticlePage = () => {
               onChange={(e) =>
                 setCategoryId(e.target.value === "" ? "" : Number(e.target.value))
               }
-              className="w-full h-[44px] px-[16px] bg-white border border-gray-300 rounded-[8px] text-body-1 text-brown-600 focus:outline-none focus:ring-2 focus:ring-brand-red focus:border-brand-red"
+              className="w-[30%] h-[44px] px-[16px] bg-white border border-gray-300 rounded-[8px] text-body-1 text-brown-600 focus:outline-none focus:ring-2 focus:ring-brand-red focus:border-brand-red"
             >
               <option value="">Select category</option>
               {categories.map((c) => (
