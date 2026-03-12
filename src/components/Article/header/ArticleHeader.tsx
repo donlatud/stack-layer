@@ -1,0 +1,15 @@
+/**
+ * หัวข้อส่วนรายการบทความ: "Latest articles"
+ */
+const ArticleHeader = () => {
+  return (
+    <div className="w-full px-[16px]">
+      <div className="text-headline-3 text-brown-600 lg:text-headline-3 xl:text-headline-2">
+        Latest articles
+      </div>
+    </div>
+  );
+};
+
+export default ArticleHeader;
+

@@ -1,73 +1,112 @@
-# React + TypeScript + Vite
+# Stack Layer
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+แพลตฟอร์มบล็อก (Blog Platform) Full Stack — Frontend สำหรับ **Stack Layer** ที่เชื่อมต่อกับ Backend API
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## ภาพรวม
 
-## React Compiler
+| รายการ | รายละเอียด |
+|--------|-------------|
+| **Framework** | React 19 + TypeScript |
+| **Build** | Vite 7 |
+| **Styling** | TailwindCSS 4 |
+| **Routing** | React Router DOM 7 |
+| **Auth** | Context API + Supabase JWT |
+| **Backend** | stack-layer-server (Express + PostgreSQL) |
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+---
 
-## Expanding the ESLint configuration
+## ฟีเจอร์หลัก
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+### ผู้ใช้สาธารณะ
+- อ่านบทความ, ค้นหา, กรองหมวดหมู่
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+### สมาชิก (Member)
+- แสดงความคิดเห็น, กด Like, แชร์บทความ  
+- จัดการโปรไฟล์, เปลี่ยนรหัสผ่าน  
+- Notifications (comments, likes, published)
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+### ผู้ดูแลระบบ (Admin)
+- จัดการบทความ (สร้าง, แก้ไข, ลบ)  
+- จัดการหมวดหมู่  
+- หน้าการแจ้งเตือน  
+- จัดการโปรไฟล์แอดมิน, เปลี่ยนรหัสผ่าน
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+---
+
+## โครงสร้างโปรเจกต์
+
+```
+src/
+├── components/     # UI Components (admin, Article, auth, layout, ui)
+├── contexts/       # AuthContext
+├── data/           # API clients (postsApi, commentsApi, likesApi, notificationsApi, ...)
+├── pages/          # หน้าต่างๆ
+├── services/       # authService
+├── constants/      # categories, pagination
+├── lib/            # utils, apiClient
+├── types/          # TypeScript types
+├── utils/          # helpers
+├── App.tsx         # Routing
+└── main.tsx        # Entry
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+---
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## Routes หลัก
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+| Path | คำอธิบาย |
+|------|----------|
+| `/` | หน้าหลัก (Public) |
+| `/post/:postId` | รายละเอียดบทความ (Public) |
+| `/member` | หน้าหลักสมาชิก |
+| `/member/post/:postId` | รายละเอียดบทความ (Member) |
+| `/member/profile` | โปรไฟล์สมาชิก |
+| `/member/reset-password` | เปลี่ยนรหัสผ่าน |
+| `/admin/article` | จัดการบทความ |
+| `/admin/category` | จัดการหมวดหมู่ |
+| `/admin/notification` | การแจ้งเตือน |
+| `/admin/profile` | โปรไฟล์แอดมิน |
+
+---
+
+## การเริ่มต้นใช้งาน
+
+### 1. ติดตั้ง Dependencies
+
+```bash
+npm install
 ```
+
+### 2. ตั้งค่า Environment
+
+สร้าง `.env`:
+
+```
+VITE_API_BASE_URL=http://localhost:4000
+```
+
+### 3. รัน Frontend
+
+```bash
+npm run dev
+```
+
+### 4. รัน Backend
+
+```bash
+cd ../stack-layer-server
+npm start
+```
+
+---
+
+## Scripts
+
+| Command | คำอธิบาย |
+|---------|----------|
+| `npm run dev` | รัน Dev Server |
+| `npm run build` | Build สำหรับ Production |
+| `npm run preview` | Preview Production Build |
+| `npm run lint` | ตรวจสอบ ESLint |
