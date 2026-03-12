@@ -1,7 +1,7 @@
-import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
-import { login } from "../../services/authService";
+import { useRequireAdminGuest } from "../../hooks";
+import { login } from "../../data/authApi";
 import LoginForm from "../../components/auth/LoginForm";
 
 /**
@@ -12,15 +12,10 @@ import LoginForm from "../../components/auth/LoginForm";
  */
 const AdminLoginPage = () => {
   const navigate = useNavigate();
-  const { user, isAuthenticated, isLoading, login: authLogin } = useAuth();
+  const { login: authLogin } = useAuth();
+  const { isReady } = useRequireAdminGuest({ redirectTo: "/admin/article" });
 
-  useEffect(() => {
-    if (!isLoading && isAuthenticated && user?.role === "admin") {
-      navigate("/admin/article", { replace: true });
-    }
-  }, [isAuthenticated, isLoading, user?.role, navigate]);
-
-  if (isLoading || (isAuthenticated && user?.role === "admin")) {
+  if (!isReady) {
     return null;
   }
 

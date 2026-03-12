@@ -1,13 +1,12 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
+import { useNotifications } from "../../hooks";
 import hhLogo from "../../assets/hh-logo.svg";
 import hamburgerMenu from "../../assets/hamburger-bar.svg";
 import { Bell, ChevronDown } from "lucide-react";
 import UserDropdownMenu from "./UserDropdownMenu";
 import NotificationDropdown from "./NotificationDropdown";
-import { fetchNotifications } from "../../data/notificationsApi";
-import type { NotificationItem } from "../../data/notificationsApi";
 import { cn } from "@/lib/utils";
 
 /**
@@ -20,26 +19,13 @@ const MemberNavBar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
-  const [notifications, setNotifications] = useState<NotificationItem[]>([]);
-  const [notificationsLoading, setNotificationsLoading] = useState(false);
+  const { notifications, isLoading: notificationsLoading, loadNotifications } = useNotifications({ limit: 20 });
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const dropdownRef = useRef<HTMLDivElement>(null);
   const profileButtonRef = useRef<HTMLButtonElement>(null);
   const notificationDropdownRef = useRef<HTMLDivElement>(null);
   const bellButtonRef = useRef<HTMLButtonElement>(null);
-
-  const loadNotifications = useCallback(async () => {
-    setNotificationsLoading(true);
-    try {
-      const data = await fetchNotifications(20);
-      setNotifications(data);
-    } catch {
-      setNotifications([]);
-    } finally {
-      setNotificationsLoading(false);
-    }
-  }, []);
 
   const handleMobileBellClick = () => {
     const willOpen = !isNotificationOpen;
@@ -118,13 +104,13 @@ const MemberNavBar = () => {
   };
 
   const handleProfileClick = () => {
-    navigate(user?.role === "admin" ? "/admin/profile" : "/member/profile");
+    navigate("/member/profile");
     setIsMenuOpen(false);
     setIsDropdownOpen(false);
   };
 
   const handleResetPasswordClick = () => {
-    navigate(user?.role === "admin" ? "/admin/reset-password" : "/member/reset-password");
+    navigate("/member/reset-password");
     setIsMenuOpen(false);
     setIsDropdownOpen(false);
   };
@@ -175,10 +161,9 @@ const MemberNavBar = () => {
 
         {/* Right side - Mobile: Hamburger, Tablet/Mobile: Hamburger, Desktop: Notification + Profile */}
         <div className="flex items-center gap-[16px]">
-          {/* Desktop (lg+) - Notification Bell and Profile Dropdown (admin only) */}
+          {/* Desktop (lg+) - Notification Bell and Profile Dropdown (all members) */}
           <div className="hidden lg:flex items-center gap-[16px]">
-            {/* Notification Bell + Dropdown (Desktop) - admin only */}
-            {user?.role === "admin" && (
+            {/* Notification Bell + Dropdown (Desktop) - user: new posts only; admin: all */}
             <div className="relative">
               <button
                 ref={bellButtonRef}
@@ -206,7 +191,6 @@ const MemberNavBar = () => {
                 </div>
               )}
             </div>
-            )}
 
             {/* Profile Dropdown Button */}
             <div className="relative">

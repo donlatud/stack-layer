@@ -1,5 +1,5 @@
 import { apiClient } from "../lib/apiClient";
-import { formatDateTime } from "./blogPosts";
+import { formatDateTime } from "../utils/dateUtils";
 
 /** โครงสร้าง comment จาก API */
 export interface ApiComment {

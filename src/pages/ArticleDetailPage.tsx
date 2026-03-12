@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import NavBar from "../components/layout/NavBar";
 import Footer from "../components/layout/Footer";
 import { useAuth } from "../contexts/AuthContext";
+import { useRedirectWhenAuthenticated } from "../hooks";
 import { fetchPostById } from "../data/blogPosts";
 import { fetchComments } from "../data/commentsApi";
 import type { CommentItem } from "../data/commentsApi";
@@ -14,6 +15,7 @@ import ArticleAuthorCard from "../components/Article/detail/ArticleAuthorCard";
 import ArticleLikeAndShare from "../components/Article/detail/ArticleLikeAndShare";
 import ArticleCommentSection from "../components/Article/detail/ArticleCommentSection";
 import LoginRequiredDialog from "../components/common/LoginRequiredDialog";
+import { LoadingMessage } from "../components/common/LoadingMessage";
 import { copyLinkToClipboard } from "../utils/clipboardUtils";
 
 /**
@@ -29,15 +31,10 @@ const ArticleDetailPage = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isLoginDialogOpen, setIsLoginDialogOpen] = useState(false);
-  const { isAuthenticated, isLoading: isAuthLoading } = useAuth();
+  const { isAuthenticated } = useAuth();
   const isLoggedIn = isAuthenticated;
 
-  // ล็อกอินอยู่แล้ว → ไปหน้ารายละเอียดของ member แทน
-  useEffect(() => {
-    if (!isAuthLoading && isAuthenticated && postId) {
-      navigate(`/member/post/${postId}`, { replace: true });
-    }
-  }, [isAuthenticated, isAuthLoading, postId, navigate]);
+  useRedirectWhenAuthenticated(postId ? `/member/post/${postId}` : "");
 
   useEffect(() => {
     const loadArticle = async () => {
@@ -121,7 +118,7 @@ const ArticleDetailPage = () => {
       <div className="w-full min-h-screen font-family-poppins flex flex-col">
         <NavBar />
         <div className="flex-1 flex justify-center items-center">
-          <p className="text-body-1 text-brown-400">Loading...</p>
+          <LoadingMessage />
         </div>
         <Footer />
       </div>
@@ -144,7 +141,7 @@ const ArticleDetailPage = () => {
 
 
   // Don't render if authenticated (will redirect to member version)
-  if (!isAuthLoading && isAuthenticated) {
+  if (!isLoading && isAuthenticated) {
     return null;
   }
 

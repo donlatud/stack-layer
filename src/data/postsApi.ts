@@ -1,5 +1,7 @@
 import { apiClient } from "../lib/apiClient";
-import { CATEGORY_ID_TO_NAME, CATEGORY_NAME_TO_ID, STATUS_ID_TO_NAME } from "../constants/categories";
+import type { ApiPost } from "../types/api";
+import { STATUS_ID_TO_NAME } from "../constants/categories";
+import { fetchCategories } from "./categoriesApi";
 
 /** โครงสร้าง post จาก API สำหรับ Admin list */
 export interface AdminPostItem {
@@ -7,19 +9,6 @@ export interface AdminPostItem {
   title: string;
   category: string;
   status: string;
-}
-
-/** โครงสร้าง post จาก API (stack-layer-server) */
-interface ApiPost {
-  id: number;
-  image: string;
-  category_id: number;
-  title: string;
-  description: string;
-  date: string;
-  content: string;
-  status_id: number;
-  likes_count?: number;
 }
 
 /** body สำหรับ create/update post */
@@ -32,17 +21,19 @@ export interface CreatePostBody {
   status_id: number;
 }
 
-/** ดึงรายการบทความสำหรับ Admin (limit สูงเพื่อโชว์ทั้งหมด) */
+/** ดึงรายการบทความสำหรับ Admin (limit สูงเพื่อโชว์ทั้งหมด) ใช้ชื่อ category จาก API */
 export const fetchAdminPosts = async (): Promise<AdminPostItem[]> => {
-  const response = await apiClient.get<{ data: { posts: ApiPost[] } }>(
-    "/posts?page=1&limit=100"
-  );
+  const [categories, response] = await Promise.all([
+    fetchCategories(),
+    apiClient.get<{ data: { posts: ApiPost[] } }>("/posts?page=1&limit=100"),
+  ]);
   const posts = response.data.data.posts;
+  const categoryById = new Map(categories.map((c) => [c.id, c.name]));
 
   return posts.map((post) => ({
     id: post.id,
     title: post.title,
-    category: CATEGORY_ID_TO_NAME[post.category_id] ?? "General",
+    category: categoryById.get(post.category_id) ?? "—",
     status: STATUS_ID_TO_NAME[post.status_id] ?? "Draft",
   }));
 };
@@ -77,23 +68,16 @@ export const PLACEHOLDER_IMAGE = "https://placehold.co/800x400?text=Thumbnail";
 
 /**
  * แปลง form values เป็น CreatePostBody
- * @param categoryOrId - ชื่อหมวดหมู่ (string) หรือ category_id (number) จาก API
+ * @param categoryId - category_id (number) จาก form
  */
 export const toCreatePostBody = (
   title: string,
   imageUrl: string,
-  categoryOrId: string | number,
+  categoryId: number,
   description: string,
   content: string,
   statusId: number
 ): CreatePostBody => {
-  const categoryId =
-    typeof categoryOrId === "number"
-      ? categoryOrId
-      : CATEGORY_NAME_TO_ID[categoryOrId];
-  if (categoryId == null) {
-    throw new Error(`Invalid category: ${categoryOrId}`);
-  }
   return {
     title,
     image: imageUrl,

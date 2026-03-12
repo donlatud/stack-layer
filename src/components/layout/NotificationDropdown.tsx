@@ -1,6 +1,12 @@
 import { useNavigate } from "react-router-dom";
 import type { NotificationItem } from "../../data/notificationsApi";
 import { cn } from "@/lib/utils";
+import { LoadingMessage } from "../common/LoadingMessage";
+import { EmptyMessage } from "../common/EmptyMessage";
+import {
+  MESSAGE_LOADING,
+  MESSAGE_NO_NOTIFICATIONS,
+} from "../../constants/messages";
 
 interface NotificationDropdownProps {
   notifications: NotificationItem[];
@@ -48,11 +54,19 @@ const NotificationDropdown = ({
     >
       {isLoading ? (
         <div className="px-[16px] py-[24px] text-center">
-          <span className="text-body-2 text-brown-500">Loading...</span>
+          <LoadingMessage
+            message={MESSAGE_LOADING}
+            className="text-body-2 text-brown-500"
+            as="span"
+          />
         </div>
       ) : notifications.length === 0 ? (
         <div className="px-[16px] py-[24px] text-center">
-          <span className="text-body-2 text-brown-500">No notifications</span>
+          <EmptyMessage
+            message={MESSAGE_NO_NOTIFICATIONS}
+            className="text-body-2 text-brown-500"
+            as="span"
+          />
         </div>
       ) : (
         <>

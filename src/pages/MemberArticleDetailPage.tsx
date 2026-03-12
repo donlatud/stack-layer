@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
+import { useRequireAuth } from "../hooks";
 import MemberNavBar from "../components/layout/MemberNavBar";
 import Footer from "../components/layout/Footer";
 import { fetchPostById } from "../data/blogPosts";
@@ -19,6 +20,7 @@ import ArticleAuthorCard from "../components/Article/detail/ArticleAuthorCard";
 import ArticleLikeAndShare from "../components/Article/detail/ArticleLikeAndShare";
 import ArticleCommentSection from "../components/Article/detail/ArticleCommentSection";
 import { copyLinkToClipboard } from "../utils/clipboardUtils";
+import { LoadingMessage } from "../components/common/LoadingMessage";
 
 /**
  * หน้ารายละเอียดบทความสำหรับสมาชิก (/member/post/:postId)
@@ -27,7 +29,8 @@ import { copyLinkToClipboard } from "../utils/clipboardUtils";
 const MemberArticleDetailPage = () => {
   const { postId } = useParams<{ postId: string }>();
   const navigate = useNavigate();
-  const { isAuthenticated, isLoading: isAuthLoading, user } = useAuth();
+  const { user } = useAuth();
+  const { isReady } = useRequireAuth({ redirectTo: "/", replace: true });
   const [article, setArticle] = useState<BlogPost | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -39,13 +42,7 @@ const MemberArticleDetailPage = () => {
   const [isSendingComment, setIsSendingComment] = useState(false);
 
   useEffect(() => {
-    if (!isAuthLoading && !isAuthenticated) {
-      navigate("/", { replace: true });
-      return;
-    }
-  }, [isAuthenticated, isAuthLoading, navigate]);
-
-  useEffect(() => {
+    if (!isReady || !postId) return;
     const loadArticle = async () => {
       setIsLoading(true);
       setError(null);
@@ -84,10 +81,8 @@ const MemberArticleDetailPage = () => {
       }
     };
 
-    if (isAuthenticated) {
-      loadArticle();
-    }
-  }, [postId, navigate, isAuthenticated]);
+    loadArticle();
+  }, [postId, navigate, isReady]);
 
   useEffect(() => {
     if (!postId) return;
@@ -171,8 +166,7 @@ const MemberArticleDetailPage = () => {
     window.open(shareUrl, "_blank", "width=600,height=400");
   };
 
-  // Don't render if not authenticated (will redirect)
-  if (isAuthLoading || !isAuthenticated) {
+  if (!isReady) {
     return null;
   }
 
@@ -182,7 +176,7 @@ const MemberArticleDetailPage = () => {
       <div className="w-full min-h-screen font-family-poppins flex flex-col">
         <MemberNavBar />
         <div className="flex-1 flex justify-center items-center">
-          <p className="text-body-1 text-brown-400">Loading...</p>
+          <LoadingMessage />
         </div>
         <Footer />
       </div>

@@ -3,6 +3,8 @@ export interface BlogPost {
   id: number;
   image: string;
   category: string;
+  /** category_id จาก API ใช้ตอนโหลดบทความเพื่อแก้ไข (match กับ dropdown) */
+  category_id?: number;
   title: string;
   description: string;
   author: string;

@@ -1,21 +1,10 @@
 import type { BlogPost, BlogPostsResponse, FetchBlogPostsParams } from "../types/blog";
+import type { ApiPost } from "../types/api";
 import axios from "axios";
 import { apiClient } from "../lib/apiClient";
-import { CATEGORY_ID_TO_NAME, CATEGORY_NAME_TO_ID } from "../constants/categories";
-
-/** โครงสร้าง post จาก API (stack-layer-server) */
-interface ApiPost {
-  id: number;
-  image: string;
-  category_id: number;
-  title: string;
-  description: string;
-  date: string;
-  content: string;
-  status_id: number;
-  likes_count: number;
-  is_liked?: boolean;
-}
+import { formatDate } from "../utils/dateUtils";
+import { fetchCategories } from "./categoriesApi";
+import type { CategoryItem } from "./categoriesApi";
 
 /** โครงสร้าง response จาก stack-layer-server GET /posts */
 interface ApiPostsResponse {
@@ -29,58 +18,34 @@ interface ApiPostsResponse {
   };
 }
 
-/** แปลง post จาก API เป็น BlogPost สำหรับใช้ใน client */
-const mapApiPostToBlogPost = (post: ApiPost): BlogPost => ({
-  id: post.id,
-  image: post.image,
-  category: CATEGORY_ID_TO_NAME[post.category_id] ?? "General",
-  title: post.title,
-  description: post.description,
-  author: "Thompson P.",
-  date: formatDate(post.date),
-  likes: post.likes_count ?? 0,
-  content: post.content,
-  ...(typeof post.is_liked === "boolean" && { is_liked: post.is_liked }),
-});
-
-/** แปลง ISO date เป็น "11 September 2024" */
-export const formatDate = (isoDateString: string): string => {
-  const date = new Date(isoDateString);
-  const day = date.getDate();
-  const monthNames = [
-    "January",
-    "February",
-    "March",
-    "April",
-    "May",
-    "June",
-    "July",
-    "August",
-    "September",
-    "October",
-    "November",
-    "December",
-  ];
-  const month = monthNames[date.getMonth()];
-  const year = date.getFullYear();
-  return `${day} ${month} ${year}`;
+/** แปลง post จาก API เป็น BlogPost (ใช้ชื่อ category จากรายการ categories) */
+const mapApiPostToBlogPost = (
+  post: ApiPost,
+  categories: CategoryItem[]
+): BlogPost => {
+  const categoryName =
+    categories.find((c) => c.id === post.category_id)?.name ?? "General";
+  return {
+    id: post.id,
+    image: post.image,
+    category: categoryName,
+    category_id: post.category_id,
+    title: post.title,
+    description: post.description,
+    author: "Thompson P.",
+    date: formatDate(post.date),
+    likes: post.likes_count ?? 0,
+    content: post.content,
+    ...(typeof post.is_liked === "boolean" && { is_liked: post.is_liked }),
+  };
 };
 
-/** แปลง ISO date เป็น "12 September 2024 at 18:30" (สำหรับ comment) */
-export const formatDateTime = (isoDateString: string): string => {
-  const date = new Date(isoDateString);
-  const datePart = formatDate(isoDateString);
-  const hours = date.getHours();
-  const minutes = date.getMinutes();
-  const pad = (n: number) => n.toString().padStart(2, "0");
-  return `${datePart} at ${pad(hours)}:${pad(minutes)}`;
-};
-
-/** ดึงบทความจาก API stack-layer-server (รองรับ page, limit, category, keyword) */
+/** ดึงบทความจาก API stack-layer-server (ใช้ categories จาก API สำหรับชื่อและ filter) */
 export const fetchBlogPosts = async (
   params?: FetchBlogPostsParams
 ): Promise<BlogPostsResponse> => {
   try {
+    const categories = await fetchCategories();
     const queryParams = new URLSearchParams();
 
     if (params?.page) {
@@ -89,10 +54,13 @@ export const fetchBlogPosts = async (
     if (params?.limit) {
       queryParams.append("limit", params.limit.toString());
     }
-    if (params?.category && params.category !== "All" && params.category !== "Highlight") {
-      const categoryId = CATEGORY_NAME_TO_ID[params.category];
-      if (categoryId != null) {
-        queryParams.append("category", categoryId.toString());
+    const categoryName = params?.category;
+    if (categoryName && categoryName !== "All" && categoryName !== "Highlight") {
+      const category = categories.find(
+        (c) => c.name.toLowerCase() === categoryName.toLowerCase()
+      );
+      if (category) {
+        queryParams.append("category", category.id.toString());
       }
     }
     if (params?.keyword && params.keyword.trim() !== "") {
@@ -103,7 +71,9 @@ export const fetchBlogPosts = async (
     const response = await apiClient.get<ApiPostsResponse>(url);
 
     const apiData = response.data.data;
-    const formattedPosts = apiData.posts.map((post) => mapApiPostToBlogPost(post));
+    const formattedPosts = apiData.posts.map((post) =>
+      mapApiPostToBlogPost(post, categories)
+    );
 
     return {
       totalPosts: apiData.totalPosts,
@@ -124,17 +94,20 @@ interface ApiPostResponse {
   data: ApiPost | null;
 }
 
-/** ดึงบทความเดียวจาก API ตาม ID (GET /posts/:postId) */
+/** ดึงบทความเดียวจาก API ตาม ID (ใช้ชื่อ category จาก API) */
 export const fetchPostById = async (postId: string): Promise<BlogPost | null> => {
   try {
-    const response = await apiClient.get<ApiPostResponse>(`/posts/${postId}`);
+    const [categories, response] = await Promise.all([
+      fetchCategories(),
+      apiClient.get<ApiPostResponse>(`/posts/${postId}`),
+    ]);
 
     const post = response.data.data;
     if (!post) {
       return null;
     }
 
-    return mapApiPostToBlogPost(post);
+    return mapApiPostToBlogPost(post, categories);
   } catch (error) {
     if (axios.isAxiosError(error) && error.response?.status === 404) {
       return null;

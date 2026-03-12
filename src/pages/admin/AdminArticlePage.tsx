@@ -1,15 +1,26 @@
-import { useState, useEffect } from "react";
+import { useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import AdminLayout from "../../components/admin/AdminLayout";
+import {
+  LoadingState,
+  ErrorState,
+  TableEmptyRow,
+} from "../../components/admin/AdminListState";
 import { Plus, Search, Edit, Trash2, ChevronDown } from "lucide-react";
 import BlackButton from "../../components/common/BlackButton";
 import { cn } from "../../lib/utils";
+import { useFetchList, useFilteredList } from "../../hooks";
 import { fetchAdminPosts } from "../../data/postsApi";
 import type { AdminPostItem } from "../../data/postsApi";
+import { fetchCategories } from "../../data/categoriesApi";
+import {
+  MESSAGE_LOADING,
+  MESSAGE_NO_ARTICLES,
+} from "../../constants/adminList";
 
 /**
  * หน้าจัดการบทความ (Admin)
- * - ตารางบทความ พร้อมค้นหา / กรอง Status, Category
+ * - ตารางบทความ พร้อมค้นหา / กรอง Status, Category (ดึง category จาก API)
  * - ปุ่ม Create article → /admin/article/create
  * - แก้ไข → /admin/article/:id/edit ลบ → /admin/article/:id/delete
  */
@@ -18,38 +29,28 @@ const AdminArticlePage = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [categoryFilter, setCategoryFilter] = useState("all");
-  const [articles, setArticles] = useState<AdminPostItem[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    const loadArticles = async () => {
-      setIsLoading(true);
-      setError(null);
-      try {
-        const data = await fetchAdminPosts();
-        setArticles(data);
-      } catch (err) {
-        console.error("Error loading articles:", err);
-        setError("Failed to load articles.");
-        setArticles([]);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    loadArticles();
-  }, []);
-
-  // กรองบทความตามคำค้น, สถานะ และหมวดหมู่ (client-side)
-  const filteredArticles = articles.filter((article) => {
-    const q = searchQuery.trim().toLowerCase();
-    const matchSearch = !q || article.title.toLowerCase().includes(q);
-    const matchStatus =
-      statusFilter === "all" || article.status.toLowerCase() === statusFilter.toLowerCase();
-    const matchCategory =
-      categoryFilter === "all" || article.category.toLowerCase() === categoryFilter.toLowerCase();
-    return matchSearch && matchStatus && matchCategory;
+  const { data: articles, isLoading, error } = useFetchList(fetchAdminPosts, {
+    errorMessage: "Failed to load articles.",
   });
+  const { data: categories } = useFetchList(fetchCategories, {
+    errorMessage: "Failed to load categories.",
+  });
+
+  const filterArticles = useCallback(
+    (article: AdminPostItem) => {
+      const q = searchQuery.trim().toLowerCase();
+      const matchSearch = !q || article.title.toLowerCase().includes(q);
+      const matchStatus =
+        statusFilter === "all" ||
+        article.status.toLowerCase() === statusFilter.toLowerCase();
+      const matchCategory =
+        categoryFilter === "all" ||
+        article.category.toLowerCase() === categoryFilter.toLowerCase();
+      return matchSearch && matchStatus && matchCategory;
+    },
+    [searchQuery, statusFilter, categoryFilter]
+  );
+  const filteredArticles = useFilteredList(articles, filterArticles);
 
   return (
     <AdminLayout activeItem="article">
@@ -87,52 +88,56 @@ const AdminArticlePage = () => {
           </div>
 
           <div className="flex items-center justify-end gap-[16px]">
-            <div className="relative">
-              <label htmlFor="admin-article-status" className="sr-only">
-                Filter by status
+            <div className="flex flex-col gap-[4px]">
+              <label htmlFor="admin-article-status" className="text-body-2 text-brown-600">
+                Status
               </label>
-              <select
-                id="admin-article-status"
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-                className="h-[44px] w-[140px] pl-[16px] pr-[40px] bg-white border border-gray-300 rounded-[8px] text-body-1 text-brown-600 appearance-none focus:outline-none focus:ring-2 focus:ring-brand-red focus:border-brand-red"
-              >
-                <option value="all">Status</option>
-                <option value="published">Published</option>
-                <option value="draft">Draft</option>
-              </select>
-              <ChevronDown className="pointer-events-none absolute right-[12px] top-1/2 -translate-y-1/2 w-[16px] h-[16px] text-brown-400" />
+              <div className="relative">
+                <select
+                  id="admin-article-status"
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                  className="h-[44px] w-[140px] pl-[16px] pr-[40px] bg-white border border-gray-300 rounded-[8px] text-body-1 text-brown-600 appearance-none focus:outline-none focus:ring-2 focus:ring-brand-red focus:border-brand-red"
+                  aria-label="Filter by status"
+                >
+                  <option value="all">All</option>
+                  <option value="published">Published</option>
+                  <option value="draft">Draft</option>
+                </select>
+                <ChevronDown className="pointer-events-none absolute right-[12px] top-1/2 -translate-y-1/2 w-[16px] h-[16px] text-brown-400" aria-hidden />
+              </div>
             </div>
 
-            <div className="relative">
-              <label htmlFor="admin-article-category" className="sr-only">
-                Filter by category
+            <div className="flex flex-col gap-[4px]">
+              <label htmlFor="admin-article-category" className="text-body-2 text-brown-600">
+                Category
               </label>
-              <select
-                id="admin-article-category"
-                value={categoryFilter}
-                onChange={(e) => setCategoryFilter(e.target.value)}
-                className="h-[44px] w-[160px] pl-[16px] pr-[40px] bg-white border border-gray-300 rounded-[8px] text-body-1 text-brown-600 appearance-none focus:outline-none focus:ring-2 focus:ring-brand-red focus:border-brand-red"
-              > 
-                <option value="all">Category</option>
-                <option value="cat">Cat</option>
-                <option value="general">General</option>
-                <option value="inspiration">Inspiration</option>
-              </select>
-              <ChevronDown className="pointer-events-none absolute right-[12px] top-1/2 -translate-y-1/2 w-[16px] h-[16px] text-brown-400" />
+              <div className="relative">
+                <select
+                  id="admin-article-category"
+                  value={categoryFilter}
+                  onChange={(e) => setCategoryFilter(e.target.value)}
+                  className="h-[44px] w-[160px] pl-[16px] pr-[40px] bg-white border border-gray-300 rounded-[8px] text-body-1 text-brown-600 appearance-none focus:outline-none focus:ring-2 focus:ring-brand-red focus:border-brand-red"
+                  aria-label="Filter by category"
+                >
+                  <option value="all">All</option>
+                  {categories.map((c) => (
+                    <option key={c.id} value={c.name}>
+                      {c.name}
+                    </option>
+                  ))}
+                </select>
+                <ChevronDown className="pointer-events-none absolute right-[12px] top-1/2 -translate-y-1/2 w-[16px] h-[16px] text-brown-400" aria-hidden />
+              </div>
             </div>
           </div>
         </form>
 
         <section className="bg-white rounded-[8px] border border-gray-200 overflow-hidden">
           {isLoading ? (
-            <div className="px-[24px] py-[60px] text-center text-body-1 text-brown-400">
-              Loading...
-            </div>
+            <LoadingState variant="table" message={MESSAGE_LOADING} />
           ) : error ? (
-            <div className="px-[24px] py-[60px] text-center text-body-1 text-brand-red">
-              {error}
-            </div>
+            <ErrorState message={error} variant="table" />
           ) : (
             <table className="w-full" aria-label="Articles table">
               <thead>
@@ -194,11 +199,7 @@ const AdminArticlePage = () => {
                   </tr>
                 ))}
                 {filteredArticles.length === 0 && (
-                  <tr>
-                    <td className="px-[24px] py-[20px] text-body-1 text-brown-400" colSpan={4}>
-                      No articles found.
-                    </td>
-                  </tr>
+                  <TableEmptyRow message={MESSAGE_NO_ARTICLES} colSpan={4} />
                 )}
               </tbody>
             </table>

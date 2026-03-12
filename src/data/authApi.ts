@@ -1,8 +1,11 @@
-import axios from "axios";
+/**
+ * Auth API — เรียก auth endpoints และ map response
+ * data/ = ฟังก์ชันเรียก API (รวม login ที่รวม POST login + GET get-user)
+ * ที่เดียวที่รู้ว่า auth เรียก API ยังไง
+ */
 import { apiClient } from "../lib/apiClient";
-
-const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL || "http://localhost:4000";
+import type { User } from "../types/user";
+import { getApiErrorMessage } from "@/utils/apiError";
 
 interface SignupData {
   name: string;
@@ -20,15 +23,6 @@ interface SignupResponse {
 interface LoginData {
   email: string;
   password: string;
-}
-
-interface User {
-  name: string;
-  email: string;
-  avatar?: string;
-  username?: string;
-  id?: string;
-  role?: string;
 }
 
 interface LoginResponse {
@@ -57,7 +51,7 @@ const mapApiUserToUser = (apiUser: {
 /** สมัครสมาชิก; เรียก POST /auth/register */
 export const signup = async (data: SignupData): Promise<SignupResponse> => {
   try {
-    const response = await axios.post(`${API_BASE_URL}/auth/register`, {
+    const response = await apiClient.post("/auth/register", {
       email: data.email,
       password: data.password,
       username: data.username,
@@ -77,16 +71,10 @@ export const signup = async (data: SignupData): Promise<SignupResponse> => {
       message: "An error occurred during registration. Please try again.",
     };
   } catch (error) {
-    if (axios.isAxiosError(error) && error.response?.data?.error) {
-      return {
-        success: false,
-        message: error.response.data.error,
-      };
-    }
     console.error("Error during signup:", error);
     return {
       success: false,
-      message: "An error occurred during registration. Please try again.",
+      message: getApiErrorMessage(error, "An error occurred during registration. Please try again."),
     };
   }
 };
@@ -94,7 +82,7 @@ export const signup = async (data: SignupData): Promise<SignupResponse> => {
 /** ล็อกอิน; เรียก POST /auth/login แล้ว GET /auth/get-user เพื่อโหลด profile */
 export const login = async (data: LoginData): Promise<LoginResponse> => {
   try {
-    const loginRes = await axios.post(`${API_BASE_URL}/auth/login`, {
+    const loginRes = await apiClient.post("/auth/login", {
       email: data.email,
       password: data.password,
     });
@@ -108,7 +96,7 @@ export const login = async (data: LoginData): Promise<LoginResponse> => {
 
     const accessToken = loginRes.data.access_token;
 
-    const userRes = await axios.get(`${API_BASE_URL}/auth/get-user`, {
+    const userRes = await apiClient.get("/auth/get-user", {
       headers: { Authorization: `Bearer ${accessToken}` },
     });
 
@@ -128,16 +116,10 @@ export const login = async (data: LoginData): Promise<LoginResponse> => {
       access_token: accessToken,
     };
   } catch (error) {
-    if (axios.isAxiosError(error) && error.response?.data?.error) {
-      return {
-        success: false,
-        message: error.response.data.error,
-      };
-    }
     console.error("Error during login:", error);
     return {
       success: false,
-      message: "An error occurred during login. Please try again.",
+      message: getApiErrorMessage(error, "An error occurred during login. Please try again."),
     };
   }
 };
@@ -176,16 +158,10 @@ export const resetPassword = async (
     });
     return { success: true };
   } catch (error) {
-    if (axios.isAxiosError(error) && error.response?.data?.error) {
-      return {
-        success: false,
-        message: error.response.data.error,
-      };
-    }
     console.error("Error during reset password:", error);
     return {
       success: false,
-      message: "An error occurred. Please try again.",
+      message: getApiErrorMessage(error, "An error occurred. Please try again."),
     };
   }
 };
@@ -208,16 +184,10 @@ export const updateProfile = async (
     }
     return { success: false, message: "Failed to update profile" };
   } catch (error) {
-    if (axios.isAxiosError(error) && error.response?.data?.error) {
-      return {
-        success: false,
-        message: error.response.data.error,
-      };
-    }
     console.error("Error during profile update:", error);
     return {
       success: false,
-      message: "An error occurred. Please try again.",
+      message: getApiErrorMessage(error, "An error occurred. Please try again."),
     };
   }
 };

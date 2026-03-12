@@ -5,18 +5,19 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { CATEGORIES } from "../../../constants/categories";
 
 interface ArticleCategoryFilterProps {
+  options: string[];
   selectedCategory: string;
   onChangeCategory: (category: string) => void;
 }
 
 /**
  * ดรอปดาวน์เลือกหมวดหมู่ (แสดงในมือถือ/แท็บเล็ต; ซ่อนใน lg+)
- * ใช้ Select จาก shadcn/ui
+ * options จาก API (Highlight + ชื่อ category)
  */
 const ArticleCategoryFilter = ({
+  options,
   selectedCategory,
   onChangeCategory,
 }: ArticleCategoryFilterProps) => {
@@ -31,7 +32,7 @@ const ArticleCategoryFilter = ({
           <SelectValue placeholder="Select category" />
         </SelectTrigger>
         <SelectContent>
-          {CATEGORIES.map((category) => (
+          {options.map((category) => (
             <SelectItem key={category} value={category}>
               {category}
             </SelectItem>
