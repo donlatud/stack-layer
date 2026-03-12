@@ -161,10 +161,9 @@ const MemberNavBar = () => {
 
         {/* Right side - Mobile: Hamburger, Tablet/Mobile: Hamburger, Desktop: Notification + Profile */}
         <div className="flex items-center gap-[16px]">
-          {/* Desktop (lg+) - Notification Bell and Profile Dropdown (admin only) */}
+          {/* Desktop (lg+) - Notification Bell and Profile Dropdown (all members) */}
           <div className="hidden lg:flex items-center gap-[16px]">
-            {/* Notification Bell + Dropdown (Desktop) - admin only */}
-            {user?.role === "admin" && (
+            {/* Notification Bell + Dropdown (Desktop) - user: new posts only; admin: all */}
             <div className="relative">
               <button
                 ref={bellButtonRef}
@@ -192,7 +191,6 @@ const MemberNavBar = () => {
                 </div>
               )}
             </div>
-            )}
 
             {/* Profile Dropdown Button */}
             <div className="relative">
